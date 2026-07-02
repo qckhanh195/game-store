@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useCart } from '../context/CartContext';
+import { useCart } from '../hooks/useCart';
 import axios from 'axios';
 import { Trash2, ShoppingBag, ArrowRight, CheckCircle2, AlertCircle, RefreshCw, Gamepad2 } from 'lucide-react';
 

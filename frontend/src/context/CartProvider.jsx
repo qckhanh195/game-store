@@ -1,7 +1,7 @@
-import { createContext, useState, useContext } from 'react';
+import { useState } from 'react';
+import { CartContext } from './CartContext';
 
-const CartContext = createContext();
-
+// CHỈ export duy nhất một React Component này
 export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState([]);
 
@@ -25,5 +25,3 @@ export const CartProvider = ({ children }) => {
     </CartContext.Provider>
   );
 };
-
-export const useCart = () => useContext(CartContext);

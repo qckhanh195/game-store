@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
-import { useCart } from '../context/CartContext';
+import { useCart } from '../hooks/useCart';
 import { 
   ArrowLeft, ShoppingCart, Calendar, User, Building, 
   Layers, Star, Loader2, Sparkles, Check, HelpCircle, Package, Bookmark

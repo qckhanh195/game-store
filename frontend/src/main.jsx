@@ -1,13 +1,13 @@
-import React from 'react'
+import { StrictMode } from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App.jsx'
 import './index.css'
-import { CartProvider } from './context/CartContext.jsx' // Đảm bảo đúng đường dẫn
+import { CartProvider } from './context/CartProvider'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
+  <StrictMode>
     <CartProvider>
       <App />
     </CartProvider>
-  </React.StrictMode>,
+  </StrictMode>,
 )

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { useCart } from '../context/CartContext';
+import { useCart } from '../hooks/useCart';
 import { ShoppingCart, Gamepad2 } from 'lucide-react';
 
 export default function Navbar() {
