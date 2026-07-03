@@ -1,12 +1,171 @@
 @import "tailwindcss";
 
+/* ============================================================
+   DESIGN SYSTEM — Retro-Futuristic Editorial
+   Game Store — Colors, Typography, Animations, Utilities
+   ============================================================ */
+
 @theme {
-  --color-background: #0b0e14;
-  --color-text-main: #f3f4f6;
+  /* --- Fonts --- */
+  --font-display: "Anybody", sans-serif;
+  --font-body: "Be Vietnam Pro", sans-serif;
+
+  /* --- Background Colors --- */
+  --color-deep: #0F1923;
+  --color-surface: #162232;
+  --color-elevated: #1E2F42;
+
+  /* --- Accent Colors --- */
+  --color-accent-coral: #FF6B4A;
+  --color-accent-amber: #FFB830;
+  --color-accent-sky: #38BDF8;
+
+  /* --- Status Colors --- */
+  --color-status-success: #4ADE80;
+  --color-status-error: #F87171;
+
+  /* --- Text Colors --- */
+  --color-primary: #F0EDE6;
+  --color-secondary: #8B9DB5;
+  --color-dim: #4A6180;
+
+  /* --- Border Colors --- */
+  --color-border-default: #253549;
+  --color-border-accent-coral: #FF6B4A;
+  --color-border-accent-amber: #FFB830;
+
+  /* --- Animations --- */
+  --animate-fade-up: fade-up 0.5s ease forwards;
+  --animate-pulse-border: pulse-border 2s ease-in-out infinite;
+  --animate-bounce-once: bounce-once 0.5s ease;
+}
+
+/* ============================================================
+   BASE
+   ============================================================ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
 body {
-  background-color: var(--color-background);
-  color: var(--color-text-main);
-  font-family: system-ui, sans-serif;
+  background-color: var(--color-deep);
+  color: var(--color-primary);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  position: relative;
 }
+
+/* Noise overlay — printed-paper feel */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+  opacity: 0.025;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* ============================================================
+   KEYFRAME ANIMATIONS
+   ============================================================ */
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse-border {
+  0%, 100% { border-color: var(--color-border-default); }
+  50% { border-color: var(--color-accent-coral); }
+}
+
+@keyframes bounce-once {
+  0%, 100% { transform: scale(1); }
+  40% { transform: scale(1.3); }
+  70% { transform: scale(0.9); }
+}
+
+/* ============================================================
+   ANIMATION UTILITIES
+   ============================================================ */
+
+.animate-fade-up { animation: fade-up 0.5s ease both; }
+.animate-delay-1 { animation-delay: 100ms; }
+.animate-delay-2 { animation-delay: 200ms; }
+.animate-delay-3 { animation-delay: 300ms; }
+.animate-delay-4 { animation-delay: 400ms; }
+.animate-delay-5 { animation-delay: 500ms; }
+.animate-delay-6 { animation-delay: 600ms; }
+.animate-delay-7 { animation-delay: 700ms; }
+
+.animate-pulse-border { animation: pulse-border 2s ease-in-out infinite; }
+.animate-bounce-once  { animation: bounce-once 0.5s ease; }
+
+/* ============================================================
+   LINK UNDERLINE UTILITY
+   ============================================================ */
+
+.link-underline {
+  position: relative;
+  text-decoration: none;
+}
+
+.link-underline::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background-color: var(--color-accent-coral);
+  transition: width 0.3s ease;
+}
+
+.link-underline:hover::after {
+  width: 100%;
+}
+
+/* ============================================================
+   SCROLLBAR
+   ============================================================ */
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--color-deep); }
+::-webkit-scrollbar-thumb { background: var(--color-border-default); }
+::-webkit-scrollbar-thumb:hover { background: var(--color-dim); }
+
+/* ============================================================
+   PROSE OVERRIDES (for dangerouslySetInnerHTML content)
+   ============================================================ */
+
+.game-description {
+  color: var(--color-secondary);
+  line-height: 1.7;
+  font-size: 0.9rem;
+}
+
+.game-description h1,
+.game-description h2,
+.game-description h3 {
+  color: var(--color-primary);
+  font-family: var(--font-display);
+  margin-top: 1.2em;
+  margin-bottom: 0.5em;
+}
+
+.game-description p { margin-bottom: 0.8em; }
+.game-description ul { padding-left: 1.2em; list-style: disc; }
+.game-description li { margin-bottom: 0.3em; }
+.game-description a { color: var(--color-accent-sky); }
+.game-description strong { color: var(--color-primary); }

@@ -3,40 +3,43 @@ const router = express.Router();
 const Game = require('../models/Game');
 
 // 1. API: Lấy danh sách game kèm Phân trang + Tìm kiếm + Bộ lọc
-// URL mẫu: /api/games?page=1&limit=12&search=cyberpunk&tag=Action&maxPrice=500000
+// URL mẫu: /api/games?page=1&limit=12&search=cyberpunk&tag=Action&category=Multiplayer&developer=Valve&maxPrice=500000
 router.get('/', async (req, res) => {
   try {
-    // Đọc các tham số từ URL gửi lên, nếu không có thì lấy giá trị mặc định
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 12;
     const search = req.query.search || '';
     const tag = req.query.tag || '';
+    const category = req.query.category || '';
+    const developer = req.query.developer || '';
     const maxPrice = req.query.maxPrice || '';
 
-    // Khởi tạo đối tượng truy vấn (Query Object)
     let query = {};
 
-    // Logic Tìm kiếm theo tên (Không phân biệt chữ hoa/thường)
     if (search) {
       query.name = { $regex: search, $options: 'i' };
     }
 
-    // Logic Lọc theo Thể loại (Tag)
     if (tag) {
-      query.tags = tag; // Tìm kiếm tag nằm trong mảng tags của game
+      query.tags = tag;
     }
 
-    // Logic Lọc theo giá tiền tối đa (Dựa trên số price_raw đã chuẩn hóa ở Bước 1)
+    if (category) {
+      query.categories = category;
+    }
+
+    if (developer) {
+      query.developer = { $regex: developer, $options: 'i' };
+    }
+
     if (maxPrice) {
       query.price_raw = { $lte: parseInt(maxPrice) };
     }
 
-    // Thực hiện truy vấn có Phân trang bằng cách dùng .skip() và .limit()
     const games = await Game.find(query)
       .skip((page - 1) * limit)
       .limit(limit);
 
-    // Đếm tổng số game thỏa mãn điều kiện để React biết có bao nhiêu trang tất cả
     const totalGames = await Game.countDocuments(query);
 
     res.json({
@@ -51,7 +54,55 @@ router.get('/', async (req, res) => {
   }
 });
 
-// 2. API: Lấy chi tiết 1 game qua ID (Phục vụ trang xem chi tiết game ở Frontend)
+// 2. API: Lấy danh sách game tương tự dựa trên tags overlap (Content-based)
+// URL: /api/games/similar/:id?limit=8
+router.get('/similar/:id', async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 8;
+    const sourceGame = await Game.findOne({ id: req.params.id });
+
+    if (!sourceGame) {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy game' });
+    }
+
+    const sourceTags = sourceGame.tags || [];
+    const sourceCategories = sourceGame.categories || [];
+    const sourceDeveloper = sourceGame.developer || '';
+
+    // Lấy tất cả game khác, tính điểm tương đồng
+    const allOtherGames = await Game.find({ id: { $ne: sourceGame.id } });
+
+    const scored = allOtherGames.map(game => {
+      const gameTags = game.tags || [];
+      const gameCategories = game.categories || [];
+
+      // Đếm số tag chung
+      const tagOverlap = gameTags.filter(t => sourceTags.includes(t)).length;
+      // Đếm số category chung
+      const categoryOverlap = gameCategories.filter(c => sourceCategories.includes(c)).length;
+      // Bonus nếu cùng developer
+      const developerMatch = game.developer && game.developer === sourceDeveloper ? 3 : 0;
+
+      // Score: tag trọng số 2, category trọng số 1.5, developer bonus 3
+      const score = tagOverlap * 2 + categoryOverlap * 1.5 + developerMatch;
+
+      return { game, score };
+    });
+
+    // Sắp xếp theo score giảm dần, lấy top limit
+    const similar = scored
+      .filter(s => s.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, limit)
+      .map(s => s.game);
+
+    res.json({ success: true, data: similar });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// 3. API: Lấy chi tiết 1 game qua ID
 // URL mẫu: /api/games/271590
 router.get('/:id', async (req, res) => {
   try {
@@ -65,17 +116,16 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// 3. API: Mua hàng / Thanh toán Demo (Trừ kho, tăng số lượng đã bán)
+// 4. API: Mua hàng / Thanh toán Demo
 // URL: POST /api/games/checkout
 router.post('/checkout', async (req, res) => {
   try {
-    const { items } = req.body; // Mảng chứa danh sách sản phẩm React gửi lên, ví dụ: [{ id: 570, quantity: 1 }]
-    
+    const { items } = req.body;
+
     if (!items || items.length === 0) {
       return res.status(400).json({ success: false, message: 'Giỏ hàng trống!' });
     }
 
-    // Vòng lặp kiểm tra và cập nhật kho cho từng game trong giỏ hàng
     for (let item of items) {
       const game = await Game.findOne({ id: item.id });
       if (!game) {
@@ -86,14 +136,13 @@ router.post('/checkout', async (req, res) => {
         return res.status(400).json({ success: false, message: `Game ${game.name} đã hết hàng hoặc không đủ số lượng tồn kho!` });
       }
 
-      // Thực hiện trừ kho (stock) và cộng số lượng đã bán (sold)
       await Game.updateOne(
         { id: item.id },
-        { 
-          $inc: { 
-            stock: -item.quantity, 
-            sold: item.quantity 
-          } 
+        {
+          $inc: {
+            stock: -item.quantity,
+            sold: item.quantity
+          }
         }
       );
     }

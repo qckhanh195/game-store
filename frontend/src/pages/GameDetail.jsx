@@ -1,122 +1,144 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useCart } from '../hooks/useCart';
-import { 
-  ArrowLeft, ShoppingCart, Calendar, User, Building, 
-  Layers, Star, Loader2, Sparkles, Check, HelpCircle, Package, Bookmark
+import { getSimilarGames } from '../hooks/useRecommendations';
+import GameCard from '../components/GameCard';
+import {
+  ArrowLeft, ShoppingCart, Calendar, User, Building,
+  Layers, Star, Loader2, Check, HelpCircle, Sparkles, Tag, Grid3X3,
 } from 'lucide-react';
 
 export default function GameDetail() {
   const { id } = useParams();
-  const { cartItems, addToCart } = useCart();
+  const navigate = useNavigate();
+  const { cartItems, addToCart, purchasedGames } = useCart();
   const [game, setGame] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeImage, setActiveImage] = useState('');
+  const [similarGames, setSimilarGames] = useState([]);
+  const [allGames, setAllGames] = useState([]);
 
+  // Fetch game detail
   useEffect(() => {
     const fetchGameDetail = async () => {
       try {
         setLoading(true);
+        setError(null);
         const response = await axios.get(`http://localhost:5000/api/games/${id}`);
         if (response.data.success) {
-          setGame(response.data.data);
-          // Set hình ảnh hiển thị chính mặc định là header_img hoặc ảnh screenshot đầu tiên
-          if (response.data.data.screenshots && response.data.data.screenshots.length > 0) {
-            setActiveImage(response.data.data.screenshots[0]);
-          } else {
-            setActiveImage(response.data.data.header_img);
-          }
+          const g = response.data.data;
+          setGame(g);
+          setActiveImage(g.screenshots?.length > 0 ? g.screenshots[0] : g.header_img);
         } else {
           setError('Không tìm thấy thông tin trò chơi.');
         }
-      } catch (err) {
-        console.error(err);
-        setError('Có lỗi xảy ra khi tải dữ liệu trò chơi. Vui lòng thử lại sau.');
+      } catch {
+        setError('Có lỗi xảy ra khi tải dữ liệu. Vui lòng thử lại.');
       } finally {
         setLoading(false);
       }
     };
-
     fetchGameDetail();
   }, [id]);
 
+  // Fetch all games for recommendation engine (lấy 100 game mẫu)
+  useEffect(() => {
+    const fetchAll = async () => {
+      try {
+        const res = await axios.get('http://localhost:5000/api/games', { params: { limit: 100, page: 1 } });
+        if (res.data.success) setAllGames(res.data.data);
+      } catch { /* ignore */ }
+    };
+    fetchAll();
+  }, []);
+
+  // Compute similar games whenever game or allGames changes
+  useEffect(() => {
+    if (game && allGames.length > 0) {
+      setSimilarGames(getSimilarGames(game, allGames, 8));
+    }
+  }, [game, allGames]);
+
+  // ── Loading ──
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center py-40">
-        <Loader2 className="w-12 h-12 text-blue-500 animate-spin mb-4" />
-        <p className="text-gray-400 font-medium">Đang tải thông tin chi tiết game...</p>
+      <div className="min-h-screen bg-[#0F1923] flex flex-col items-center justify-center gap-4">
+        <Loader2 className="w-10 h-10 text-[#FF6B4A] animate-spin" />
+        <p className="font-display text-sm tracking-widest text-[#8B9DB5]">ĐANG TẢI...</p>
       </div>
     );
   }
 
+  // ── Error ──
   if (error || !game) {
     return (
-      <div className="container mx-auto px-4 py-20 text-center max-w-lg">
-        <div className="bg-gray-900 border border-red-500/20 rounded-2xl p-8 shadow-xl">
-          <HelpCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-white mb-2">Đã xảy ra lỗi</h2>
-          <p className="text-gray-400 mb-6">{error || 'Không tìm thấy trò chơi.'}</p>
-          <Link 
-            to="/" 
-            className="inline-flex items-center gap-2 px-6 py-2.5 bg-gray-800 hover:bg-gray-700 text-white font-semibold rounded-xl transition-all"
-          >
-            <ArrowLeft className="w-5 h-5" />
-            Quay lại Cửa hàng
-          </Link>
-        </div>
+      <div className="min-h-screen bg-[#0F1923] flex flex-col items-center justify-center px-6 text-center">
+        <HelpCircle className="w-14 h-14 text-[#F87171] mb-4" />
+        <h2 className="font-display text-2xl font-bold text-[#F0EDE6] mb-2">Đã xảy ra lỗi</h2>
+        <p className="text-[#8B9DB5] mb-6">{error || 'Không tìm thấy trò chơi.'}</p>
+        <Link
+          to="/"
+          className="inline-flex items-center gap-2 border border-[#253549] px-5 py-2.5
+                     text-sm text-[#8B9DB5] font-display hover:border-[#FF6B4A] hover:text-[#FF6B4A] transition-all"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Quay lại
+        </Link>
       </div>
     );
   }
 
-  const isAlreadyInCart = cartItems.some((item) => item.id === game.id);
+  const isInCart = cartItems.some((item) => item.id === game.id);
+  const isPurchased = purchasedGames.some((g) => g.id === game.id);
+
+  const handleTagClick = (tag) => navigate(`/danh-muc?tag=${encodeURIComponent(tag)}`);
+  const handleCategoryClick = (cat) => navigate(`/danh-muc?category=${encodeURIComponent(cat)}`);
+  const handleDeveloperClick = (dev) => navigate(`/danh-muc?developer=${encodeURIComponent(dev)}`);
 
   return (
-    <div className="relative min-h-screen">
-      {/* Background Banner Blur */}
-      <div className="absolute top-0 left-0 w-full h-[500px] overflow-hidden -z-10 select-none pointer-events-none opacity-20">
-        <img 
-          src={game.header_img} 
-          alt="" 
-          className="w-full h-full object-cover filter blur-[80px]"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0b0e14] via-[#0b0e14]/40 to-transparent"></div>
+    <div className="min-h-screen bg-[#0F1923] text-[#F0EDE6] font-body">
+      {/* Blurred banner */}
+      <div className="absolute top-0 left-0 w-full h-80 overflow-hidden -z-10 select-none pointer-events-none opacity-15">
+        <img src={game.header_img} alt="" className="w-full h-full object-cover filter blur-[80px]" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0F1923] via-[#0F1923]/60 to-transparent" />
       </div>
 
-      <div className="container mx-auto px-4 py-8 max-w-7xl">
-        {/* Nút quay lại */}
-        <Link 
-          to="/" 
-          className="inline-flex items-center gap-2 text-gray-400 hover:text-white font-semibold mb-6 transition-colors group text-sm"
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        {/* Back button */}
+        <Link
+          to="/"
+          className="inline-flex items-center gap-2 text-[#8B9DB5] hover:text-[#FF6B4A] font-display text-sm mb-8 transition-colors group"
         >
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-          Quay lại Cửa hàng
+          Quay lại cửa hàng
         </Link>
 
-        {/* Header Grid: Title và Thông tin chung */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
-          {/* Cột Trái & Giữa: Media Gallery */}
+        {/* Main Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10 animate-fade-up">
+          {/* Left: Media */}
           <div className="lg:col-span-2 space-y-4">
-            {/* Ảnh lớn chính */}
-            <div className="aspect-video bg-gray-950 rounded-2xl overflow-hidden border border-gray-800 relative shadow-2xl">
-              <img 
-                src={activeImage} 
-                alt={game.name} 
+            {/* Main image */}
+            <div className="aspect-video overflow-hidden border border-[#253549] bg-[#1E2F42]">
+              <img
+                src={activeImage}
+                alt={game.name}
                 className="w-full h-full object-cover"
               />
             </div>
-
-            {/* List ảnh nhỏ (Screenshots) */}
+            {/* Thumbnails */}
             {game.screenshots && game.screenshots.length > 0 && (
-              <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-800 scrollbar-track-transparent">
+              <div className="flex gap-2 overflow-x-auto pb-2">
                 {game.screenshots.map((src, idx) => (
                   <button
                     key={idx}
                     onClick={() => setActiveImage(src)}
-                    className={`w-24 md:w-32 aspect-video rounded-lg overflow-hidden border-2 shrink-0 transition-all ${
-                      activeImage === src ? 'border-blue-500 scale-95 shadow-md shadow-blue-500/25' : 'border-gray-800 hover:border-gray-600'
-                    }`}
+                    className={`w-24 md:w-28 aspect-video overflow-hidden shrink-0 border transition-all
+                      ${activeImage === src
+                        ? 'border-[#FF6B4A]'
+                        : 'border-[#253549] hover:border-[#8B9DB5]'
+                      }`}
                   >
                     <img src={src} alt={`Screenshot ${idx + 1}`} className="w-full h-full object-cover" />
                   </button>
@@ -125,78 +147,112 @@ export default function GameDetail() {
             )}
           </div>
 
-          {/* Cột Phải: Purchase Card & Meta Info */}
-          <div className="lg:col-span-1 space-y-6">
-            <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 shadow-xl relative overflow-hidden flex flex-col justify-between h-full min-h-[400px]">
+          {/* Right: Purchase card */}
+          <div className="lg:col-span-1">
+            <div className="border border-[#253549] bg-[#162232] p-6 h-full flex flex-col justify-between min-h-80">
               <div>
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20 mb-4">
-                  <Sparkles className="w-3.5 h-3.5" />
-                  Tựa Game Nổi Bật
-                </span>
-                
-                <h1 className="text-2xl md:text-3xl font-black text-white leading-tight mb-2 tracking-tight">
-                  {game.name}
-                </h1>
-
-                {/* Score */}
-                <div className="flex items-center gap-2 mb-6">
-                  <div className="flex items-center gap-1 text-amber-400 bg-amber-400/5 px-2.5 py-1 rounded-lg border border-amber-400/10">
-                    <Star className="w-4 h-4 fill-amber-400" />
-                    <span className="font-bold text-sm">Score: {game.user_score || 'N/A'}</span>
-                  </div>
-                  {game.stock > 0 ? (
-                    <span className="text-xs text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded-lg border border-emerald-400/20 flex items-center gap-1">
-                      <Package className="w-3.5 h-3.5" />
-                      Còn lại {game.stock} bản
+                {/* Status */}
+                <div className="flex items-center gap-2 mb-4">
+                  {isPurchased ? (
+                    <span className="inline-flex items-center gap-1.5 text-xs font-display tracking-widest
+                                     bg-[#4ADE80]/10 text-[#4ADE80] border border-[#4ADE80]/20 px-3 py-1">
+                      <Check className="w-3 h-3" />
+                      ĐÃ MUA
                     </span>
                   ) : (
-                    <span className="text-xs text-red-400 bg-red-400/10 px-2 py-1 rounded-lg border border-red-400/20">
-                      Hết hàng
+                    <span className="inline-flex items-center gap-1.5 text-xs font-display tracking-widest
+                                     bg-[#FF6B4A]/10 text-[#FF6B4A] border border-[#FF6B4A]/20 px-3 py-1">
+                      <Sparkles className="w-3 h-3" />
+                      NỔI BẬT
+                    </span>
+                  )}
+                  {game.stock === 0 && (
+                    <span className="text-xs font-display text-[#F87171] border border-[#F87171]/30 px-2 py-1">
+                      HẾT HÀNG
                     </span>
                   )}
                 </div>
 
-                {/* Metadata list */}
-                <div className="space-y-3.5 text-sm text-gray-400 mb-8 border-t border-gray-800/60 pt-5">
-                  <div className="flex items-center gap-3">
-                    <Calendar className="w-4 h-4 text-gray-500 shrink-0" />
-                    <span>Ngày ra mắt: <strong className="text-gray-200 font-medium">{game.release_date || 'N/A'}</strong></span>
+                <h1 className="font-display text-2xl md:text-3xl font-bold text-[#F0EDE6] leading-tight mb-3">
+                  {game.name}
+                </h1>
+
+                {/* Score */}
+                {game.user_score && (
+                  <div className="flex items-center gap-1.5 mb-6">
+                    <Star className="w-4 h-4 text-[#FFB830] fill-[#FFB830]" />
+                    <span className="font-display text-sm font-bold text-[#FFB830]">
+                      {game.user_score}
+                    </span>
+                    <span className="text-xs text-[#4A6180]">/ điểm người dùng</span>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <User className="w-4 h-4 text-gray-500 shrink-0" />
-                    <span>Phát triển: <strong className="text-gray-200 font-medium">{game.developer || 'N/A'}</strong></span>
+                )}
+
+                {/* Metadata */}
+                <div className="space-y-3 text-sm text-[#8B9DB5] border-t border-[#253549] pt-4 mb-6">
+                  <div className="flex items-start gap-3">
+                    <Calendar className="w-4 h-4 text-[#4A6180] shrink-0 mt-0.5" />
+                    <span>Ngày ra mắt: <strong className="text-[#F0EDE6]">{game.release_date || 'N/A'}</strong></span>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <Building className="w-4 h-4 text-gray-500 shrink-0" />
-                    <span>Nhà phát hành: <strong className="text-gray-200 font-medium">{game.publisher || 'N/A'}</strong></span>
+                  <div className="flex items-start gap-3">
+                    <User className="w-4 h-4 text-[#4A6180] shrink-0 mt-0.5" />
+                    <span>
+                      Phát triển:{' '}
+                      <button
+                        onClick={() => handleDeveloperClick(game.developer)}
+                        className="text-[#38BDF8] hover:text-[#FF6B4A] transition-colors font-medium link-underline"
+                      >
+                        {game.developer || 'N/A'}
+                      </button>
+                    </span>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <Building className="w-4 h-4 text-[#4A6180] shrink-0 mt-0.5" />
+                    <span>Phát hành: <strong className="text-[#F0EDE6]">{game.publisher || 'N/A'}</strong></span>
                   </div>
                 </div>
               </div>
 
-              <div>
-                <div className="flex justify-between items-baseline mb-4 border-t border-gray-800/60 pt-4">
-                  <span className="text-sm text-gray-400">Giá bán chính thức</span>
-                  <span className="text-2xl md:text-3xl font-black text-green-400 tracking-tight">
-                    {game.price}
+              {/* Price + Action */}
+              <div className="border-t border-[#253549] pt-4">
+                <div className="flex justify-between items-baseline mb-4">
+                  <span className="text-xs text-[#4A6180] font-display tracking-wide">GIÁ BÁN</span>
+                  <span className="font-display text-2xl font-bold text-[#FFB830]">
+                    {game.price_raw === 0 ? 'Miễn phí' : game.price}
                   </span>
                 </div>
 
-                {isAlreadyInCart ? (
-                  <Link 
-                    to="/cart"
-                    className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 text-center text-sm uppercase tracking-wider"
+                {isPurchased ? (
+                  <Link
+                    to="/da-mua"
+                    className="w-full py-3 border border-[#4ADE80] text-[#4ADE80] font-display font-bold
+                               text-sm tracking-widest flex items-center justify-center gap-2
+                               hover:bg-[#4ADE80]/10 transition-colors"
                   >
-                    <Check className="w-5 h-5" />
-                    Xem Trong Giỏ Hàng
+                    <Check className="w-4 h-4" />
+                    XEM GAME ĐÃ MUA
+                  </Link>
+                ) : isInCart ? (
+                  <Link
+                    to="/cart"
+                    className="w-full py-3 border border-[#38BDF8] text-[#38BDF8] font-display font-bold
+                               text-sm tracking-widest flex items-center justify-center gap-2
+                               hover:bg-[#38BDF8]/10 transition-colors"
+                  >
+                    <ShoppingCart className="w-4 h-4" />
+                    XEM GIỎ HÀNG
                   </Link>
                 ) : (
                   <button
                     disabled={game.stock === 0}
                     onClick={() => addToCart(game)}
-                    className="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 disabled:from-gray-800 disabled:to-gray-800 disabled:text-gray-600 text-white font-extrabold rounded-xl shadow-lg hover:shadow-blue-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed text-sm uppercase tracking-wider"
+                    className="w-full py-3 bg-[#FF6B4A] text-[#0F1923] font-display font-bold
+                               text-sm tracking-widest flex items-center justify-center gap-2
+                               hover:bg-[#FF6B4A]/90 disabled:opacity-30 disabled:cursor-not-allowed
+                               transition-colors cursor-pointer"
                   >
-                    <ShoppingCart className="w-5 h-5" />
-                    Thêm vào giỏ hàng
+                    <ShoppingCart className="w-4 h-4" />
+                    THÊM VÀO GIỎ HÀNG
                   </button>
                 )}
               </div>
@@ -204,71 +260,128 @@ export default function GameDetail() {
           </div>
         </div>
 
-        {/* Body Section: About, Tags và Details */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Chi tiết mô tả và cấu hình */}
-          <div className="lg:col-span-2 space-y-8">
-            {/* Giới thiệu */}
-            <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 md:p-8 shadow-md">
-              <h2 className="text-xl font-bold text-white mb-4 pb-3 border-b border-gray-800 flex items-center gap-2">
-                <Bookmark className="w-5 h-5 text-blue-500" />
+        {/* Body: About + Tags */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-fade-up animate-delay-2">
+          {/* About */}
+          <div className="lg:col-span-2 space-y-6">
+            <div className="border border-[#253549] bg-[#162232] p-6">
+              <h2 className="font-display text-xl font-semibold text-[#F0EDE6] mb-4 flex items-center gap-3">
+                <span className="text-[#FF6B4A] font-display text-sm tracking-widest">//</span>
                 Giới thiệu trò chơi
               </h2>
-              <div 
-                className="text-gray-300 leading-relaxed text-sm md:text-base space-y-4 prose prose-invert max-w-none"
-                dangerouslySetInnerHTML={{ __html: game.about || game.description }}
+              <div
+                className="game-description"
+                dangerouslySetInnerHTML={{ __html: game.about || game.description || 'Chưa có mô tả.' }}
               />
             </div>
 
-            {/* Ngôn ngữ hỗ trợ */}
             {game.supported_languages && (
-              <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 md:p-8 shadow-md">
-                <h2 className="text-xl font-bold text-white mb-4 pb-3 border-b border-gray-800 flex items-center gap-2">
-                  <Layers className="w-5 h-5 text-blue-500" />
+              <div className="border border-[#253549] bg-[#162232] p-6">
+                <h2 className="font-display text-xl font-semibold text-[#F0EDE6] mb-4 flex items-center gap-3">
+                  <span className="text-[#FFB830] font-display text-sm tracking-widest">//</span>
                   Ngôn ngữ hỗ trợ
                 </h2>
-                <div 
-                  className="text-gray-400 text-xs md:text-sm leading-relaxed prose prose-invert max-w-none"
+                <div
+                  className="text-[#8B9DB5] text-sm leading-relaxed"
                   dangerouslySetInnerHTML={{ __html: game.supported_languages }}
                 />
               </div>
             )}
           </div>
 
-          {/* Tag, Thể loại bổ sung */}
+          {/* Tags + Categories + Developer */}
           <div className="lg:col-span-1 space-y-6">
-            {/* Danh mục & Tag */}
-            <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 shadow-md">
-              <h3 className="text-lg font-bold text-white mb-4 pb-2 border-b border-gray-800">Mác & Thể loại</h3>
-              
-              {game.tags && game.tags.length > 0 && (
-                <div className="mb-6">
-                  <span className="text-xs text-gray-500 block mb-2 font-semibold uppercase tracking-wider">Từ khóa phổ biến</span>
-                  <div className="flex flex-wrap gap-2">
-                    {game.tags.map((t) => (
-                      <span key={t} className="text-xs bg-gray-850 hover:bg-gray-800 border border-gray-850 text-gray-300 px-3 py-1.5 rounded-lg transition-colors">
-                        {t}
-                      </span>
-                    ))}
-                  </div>
+            {/* Tags */}
+            {game.tags && game.tags.length > 0 && (
+              <div className="border border-[#253549] bg-[#162232] p-6">
+                <h3 className="font-display text-base font-semibold text-[#F0EDE6] mb-4 flex items-center gap-2">
+                  <Tag className="w-4 h-4 text-[#FF6B4A]" />
+                  Tags
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {game.tags.map((t) => (
+                    <button
+                      key={t}
+                      onClick={() => handleTagClick(t)}
+                      className="text-xs font-display tracking-wide border border-[#253549]
+                                 text-[#8B9DB5] px-2.5 py-1 transition-all
+                                 hover:border-[#FF6B4A] hover:text-[#FF6B4A] hover:bg-[#FF6B4A]/5
+                                 cursor-pointer"
+                    >
+                      {t}
+                    </button>
+                  ))}
                 </div>
-              )}
+              </div>
+            )}
 
-              {game.categories && game.categories.length > 0 && (
-                <div>
-                  <span className="text-xs text-gray-500 block mb-2 font-semibold uppercase tracking-wider">Tính năng trò chơi</span>
-                  <div className="flex flex-wrap gap-2">
-                    {game.categories.map((c) => (
-                      <span key={c} className="text-xs bg-gray-850 border border-gray-800 text-gray-400 px-3 py-1 rounded-lg">
-                        {c}
-                      </span>
-                    ))}
-                  </div>
+            {/* Categories */}
+            {game.categories && game.categories.length > 0 && (
+              <div className="border border-[#253549] bg-[#162232] p-6">
+                <h3 className="font-display text-base font-semibold text-[#F0EDE6] mb-4 flex items-center gap-2">
+                  <Grid3X3 className="w-4 h-4 text-[#FFB830]" />
+                  Danh mục
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {game.categories.map((c) => (
+                    <button
+                      key={c}
+                      onClick={() => handleCategoryClick(c)}
+                      className="text-xs font-display tracking-wide border border-[#253549]
+                                 text-[#8B9DB5] px-2.5 py-1 transition-all
+                                 hover:border-[#FFB830] hover:text-[#FFB830] hover:bg-[#FFB830]/5
+                                 cursor-pointer"
+                    >
+                      {c}
+                    </button>
+                  ))}
                 </div>
-              )}
-            </div>
+              </div>
+            )}
+
+            {/* Developer link */}
+            {game.developer && (
+              <div className="border border-[#253549] bg-[#162232] p-6">
+                <h3 className="font-display text-base font-semibold text-[#F0EDE6] mb-3 flex items-center gap-2">
+                  <Layers className="w-4 h-4 text-[#38BDF8]" />
+                  Nhà phát triển
+                </h3>
+                <button
+                  onClick={() => handleDeveloperClick(game.developer)}
+                  className="font-display text-sm text-[#38BDF8] hover:text-[#FF6B4A] transition-colors link-underline"
+                >
+                  {game.developer}
+                </button>
+                <p className="text-xs text-[#4A6180] mt-1">
+                  Xem tất cả game từ nhà phát triển này →
+                </p>
+              </div>
+            )}
           </div>
         </div>
+
+        {/* Similar Games Section */}
+        {similarGames.length > 0 && (
+          <div className="mt-14 animate-fade-up animate-delay-4">
+            {/* Dot divider */}
+            <div className="flex gap-1.5 mb-8">
+              {Array.from({ length: 40 }).map((_, i) => (
+                <span key={i} className="w-1 h-1 rounded-full bg-[#253549]" />
+              ))}
+            </div>
+
+            <h2 className="font-display text-2xl font-semibold text-[#F0EDE6] mb-6 flex items-center gap-3">
+              <span className="text-[#38BDF8] font-display text-sm tracking-widest">//</span>
+              Game tương tự
+            </h2>
+
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {similarGames.map((g) => (
+                <GameCard key={g.id} game={g} />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
