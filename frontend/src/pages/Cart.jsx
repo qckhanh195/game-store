@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../hooks/useCart';
-import axios from 'axios';
+import { gameApi } from '../services/api';
 import {
   Trash2, ShoppingBag, ArrowRight, CheckCircle2, AlertCircle,
   RefreshCw, Gamepad2, ShoppingCart,
@@ -27,15 +27,15 @@ export default function Cart() {
     setSuccessMsg('');
 
     try {
-      const payload = { items: cartItems.map((item) => ({ id: item.id, quantity: 1 })) };
-      const response = await axios.post('http://localhost:5000/api/games/checkout', payload);
+      const itemsPayload = cartItems.map((item) => ({ id: item.id, quantity: 1 }));
+      const data = await gameApi.checkout(itemsPayload);
 
-      if (response.data.success) {
+      if (data.success) {
         addToPurchased(cartItems); // Lưu vào danh sách đã mua
-        setSuccessMsg(response.data.message || 'Thanh toán thành công!');
+        setSuccessMsg(data.message || 'Thanh toán thành công!');
         clearCart();
       } else {
-        setErrorMsg(response.data.message || 'Thanh toán thất bại.');
+        setErrorMsg(data.message || 'Thanh toán thất bại.');
       }
     } catch (err) {
       setErrorMsg(err.response?.data?.message || 'Có lỗi xảy ra. Vui lòng thử lại.');

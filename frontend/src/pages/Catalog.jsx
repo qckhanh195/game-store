@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
-import axios from 'axios';
+import { gameApi } from '../services/api';
 import GameCard from '../components/GameCard';
 import { Tag, Grid3X3, User, X, SlidersHorizontal, Search } from 'lucide-react';
 
@@ -40,20 +40,18 @@ export default function Catalog() {
     const fetchGames = async () => {
       try {
         setLoading(true);
-        const res = await axios.get('http://localhost:5000/api/games', {
-          params: {
-            page,
-            limit: 16,
-            search,
-            tag: activeTag,
-            category: activeCategory,
-            developer: activeDeveloper,
-          },
+        const data = await gameApi.getGames({
+          page,
+          limit: 16,
+          search,
+          tag: activeTag,
+          category: activeCategory,
+          developer: activeDeveloper,
         });
-        if (res.data.success) {
-          setGames(res.data.data);
-          setTotalPages(res.data.totalPages);
-          setTotalGames(res.data.totalGames);
+        if (data.success) {
+          setGames(data.data);
+          setTotalPages(data.totalPages);
+          setTotalGames(data.totalGames);
         }
       } catch {
         /* ignore */

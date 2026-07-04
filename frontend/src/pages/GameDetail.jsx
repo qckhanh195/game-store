@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { gameApi } from '../services/api';
 import { useCart } from '../hooks/useCart';
 import { getSimilarGames } from '../hooks/useRecommendations';
 import GameCard from '../components/GameCard';
@@ -26,9 +26,9 @@ export default function GameDetail() {
       try {
         setLoading(true);
         setError(null);
-        const response = await axios.get(`http://localhost:5000/api/games/${id}`);
-        if (response.data.success) {
-          const g = response.data.data;
+        const data = await gameApi.getGameDetail(id);
+        if (data.success) {
+          const g = data.data;
           setGame(g);
           setActiveImage(g.screenshots?.length > 0 ? g.screenshots[0] : g.header_img);
         } else {
@@ -47,8 +47,8 @@ export default function GameDetail() {
   useEffect(() => {
     const fetchAll = async () => {
       try {
-        const res = await axios.get('http://localhost:5000/api/games', { params: { limit: 100, page: 1 } });
-        if (res.data.success) setAllGames(res.data.data);
+        const data = await gameApi.getGames({ limit: 100, page: 1 });
+        if (data.success) setAllGames(data.data);
       } catch { /* ignore */ }
     };
     fetchAll();

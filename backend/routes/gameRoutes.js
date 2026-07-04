@@ -153,4 +153,33 @@ router.post('/checkout', async (req, res) => {
   }
 });
 
+// 5. API: Khôi phục kho hàng khi reset game đã mua
+// URL: POST /api/games/reset-purchases
+router.post('/reset-purchases', async (req, res) => {
+  try {
+    const { gameIds } = req.body;
+
+    if (!gameIds || gameIds.length === 0) {
+      return res.json({ success: true, message: 'Thư viện đã trống.' });
+    }
+
+    // Tăng lại stock và giảm sold tương ứng
+    for (let id of gameIds) {
+      await Game.updateOne(
+        { id: id },
+        {
+          $inc: {
+            stock: 1,
+            sold: -1
+          }
+        }
+      );
+    }
+
+    res.json({ success: true, message: 'Đã hoàn trả số lượng game vào kho thành công!' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 module.exports = router;

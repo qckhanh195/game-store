@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
+import { gameApi } from '../services/api';
 import { useCart } from '../hooks/useCart';
 import { getPersonalizedRecommendations } from '../hooks/useRecommendations';
 
@@ -21,11 +21,9 @@ export default function Recommendations() {
     const fetchAll = async () => {
       try {
         setLoading(true);
-        const res = await axios.get('http://localhost:5000/api/games', {
-          params: { limit: 200, page: 1 },
-        });
-        if (res.data.success) {
-          const games = res.data.data;
+        const data = await gameApi.getGames({ limit: 200, page: 1 });
+        if (data.success) {
+          const games = data.data;
           setAllGames(games);
           const shuffled = [...games].sort(() => Math.random() - 0.5);
           setTrendingGames(shuffled.slice(0, 8));

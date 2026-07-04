@@ -1,6 +1,6 @@
 # Design System — Game Store
 
-Design direction: **Retro-Futuristic Editorial** — inspired by magazine/editorial design with warm tones, geometric shapes, and bold personality. Adapted for an e-commerce game store (catalog, product detail, cart, checkout).
+Design direction: **Retro-Futuristic Editorial** — inspired by magazine/editorial design with warm tones, geometric shapes, and bold personality.
 
 This document defines the shared design language for the React project to keep every page and component visually consistent.
 

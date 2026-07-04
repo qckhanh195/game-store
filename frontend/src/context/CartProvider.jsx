@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { CartContext } from './CartContext';
+import { gameApi } from '../services/api';
 
 const PURCHASED_KEY = 'gamestore_purchased';
 const EXCLUDED_KEY = 'gamestore_profile_excluded';
@@ -82,12 +83,39 @@ export const CartProvider = ({ children }) => {
     });
   };
 
+  // Reset toàn bộ danh sách game đã mua và khôi phục kho hàng backend
+  const resetPurchased = async () => {
+    try {
+      const gameIds = purchasedGames.map((g) => g.id);
+      if (gameIds.length > 0) {
+        await gameApi.resetPurchases(gameIds);
+      }
+    } catch (err) {
+      console.error('Lỗi khi khôi phục kho hàng backend:', err);
+    }
+    setPurchasedGames([]);
+    savePurchased([]);
+    setProfileExcluded(new Set());
+    saveExcluded(new Set());
+  };
+
   // Game dùng làm profile = đã mua nhưng chưa bị loại
   const profileGames = purchasedGames.filter((g) => !profileExcluded.has(g.id));
 
   return (
     <CartContext.Provider
-      value={{ cartItems, purchasedGames, profileGames, profileExcluded, addToCart, removeFromCart, clearCart, addToPurchased, toggleProfileExclude }}
+      value={{
+        cartItems,
+        purchasedGames,
+        profileGames,
+        profileExcluded,
+        addToCart,
+        removeFromCart,
+        clearCart,
+        addToPurchased,
+        toggleProfileExclude,
+        resetPurchased,
+      }}
     >
       {children}
     </CartContext.Provider>

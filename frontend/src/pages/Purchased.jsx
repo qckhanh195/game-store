@@ -1,9 +1,24 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../hooks/useCart';
-import { Package, ArrowRight, Gamepad2, Calendar, User } from 'lucide-react';
+import { Package, ArrowRight, Gamepad2, Calendar, User, RotateCcw, AlertTriangle, Loader2 } from 'lucide-react';
 
 export default function Purchased() {
-  const { purchasedGames } = useCart();
+  const { purchasedGames, resetPurchased } = useCart();
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [resetting, setResetting] = useState(false);
+
+  const handleReset = async () => {
+    setResetting(true);
+    try {
+      await resetPurchased();
+      setShowConfirmModal(false);
+    } catch (err) {
+      console.error('Lỗi khi reset game đã mua:', err);
+    } finally {
+      setResetting(false);
+    }
+  };
 
   const formatPrice = (rawPrice) => {
     if (!rawPrice || rawPrice === 0) return 'Miễn phí';
@@ -14,16 +29,29 @@ export default function Purchased() {
     <div className="min-h-screen bg-[#0F1923] text-[#F0EDE6] font-body">
       {/* Header */}
       <div className="border-b border-[#253549] bg-[#162232] px-6 py-10 animate-fade-up">
-        <div className="max-w-7xl mx-auto">
-          <p className="font-display text-sm tracking-widest text-[#4ADE80] mb-2">// ĐÃ MUA</p>
-          <h1 className="font-display text-4xl md:text-5xl font-bold text-[#F0EDE6] mb-3 leading-tight">
-            Game của <span className="text-[#4ADE80]">bạn</span>
-          </h1>
-          <p className="text-[#8B9DB5] text-base">
-            {purchasedGames.length > 0
-              ? `Bạn đang sở hữu ${purchasedGames.length} tựa game.`
-              : 'Bạn chưa mua game nào.'}
-          </p>
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
+          <div>
+            <p className="font-display text-sm tracking-widest text-[#4ADE80] mb-2">// ĐÃ MUA</p>
+            <h1 className="font-display text-4xl md:text-5xl font-bold text-[#F0EDE6] mb-3 leading-tight">
+              Game của <span className="text-[#4ADE80]">bạn</span>
+            </h1>
+            <p className="text-[#8B9DB5] text-base">
+              {purchasedGames.length > 0
+                ? `Bạn đang sở hữu ${purchasedGames.length} tựa game.`
+                : 'Bạn chưa mua game nào.'}
+            </p>
+          </div>
+          {purchasedGames.length > 0 && (
+            <button
+              onClick={() => setShowConfirmModal(true)}
+              className="inline-flex items-center gap-2 border border-[#FF4655] text-[#FF4655]
+                         font-display font-bold text-xs tracking-wider px-5 py-2.5
+                         hover:bg-[#FF4655] hover:text-[#0F1923] transition-all cursor-pointer self-start sm:self-auto"
+            >
+              <RotateCcw className="w-4 h-4" />
+              RESET THƯ VIỆN
+            </button>
+          )}
         </div>
       </div>
 
@@ -193,6 +221,48 @@ export default function Purchased() {
           </>
         )}
       </div>
+
+      {/* Confirmation Modal */}
+      {showConfirmModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-xs p-4 transition-all duration-300">
+          <div className="border border-[#FF4655]/40 bg-[#162232] p-8 max-w-md w-full relative animate-fade-up">
+            <div className="flex justify-center mb-5">
+              <div className="border border-[#FF4655]/30 p-4 text-[#FF4655]">
+                <AlertTriangle className="w-12 h-12" />
+              </div>
+            </div>
+            <h3 className="font-display text-xl font-bold text-[#F0EDE6] mb-3 text-center tracking-wider">
+              XÁC NHẬN RESET THƯ VIỆN?
+            </h3>
+            <p className="text-[#8B9DB5] text-sm leading-relaxed mb-8 text-center font-body">
+              Hành động này sẽ xóa tất cả game đã mua khỏi tài khoản của bạn và hoàn trả lại số lượng tồn kho tương ứng trong cơ sở dữ liệu. Bạn không thể hoàn tác hành động này.
+            </p>
+            <div className="flex gap-4">
+              <button
+                disabled={resetting}
+                onClick={() => setShowConfirmModal(false)}
+                className="flex-1 border border-[#253549] text-[#8B9DB5] font-display text-xs tracking-wider py-3 hover:bg-[#1E2F42] hover:text-[#F0EDE6] transition-colors cursor-pointer"
+              >
+                HỦY BỎ
+              </button>
+              <button
+                disabled={resetting}
+                onClick={handleReset}
+                className="flex-1 bg-[#FF4655] text-[#0F1923] font-display font-bold text-xs tracking-wider py-3 hover:bg-[#FF4655]/90 transition-colors flex items-center justify-center gap-2 cursor-pointer"
+              >
+                {resetting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    ĐANG RESET...
+                  </>
+                ) : (
+                  'ĐỒNG Ý RESET'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

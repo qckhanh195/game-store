@@ -10,4 +10,5 @@ export const CartContext = createContext({
   clearCart: () => {},
   addToPurchased: () => {},
   toggleProfileExclude: () => {},
+  resetPurchased: () => {},
 });

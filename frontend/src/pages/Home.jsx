@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { gameApi } from '../services/api';
 import GameCard from '../components/GameCard';
 import { Search, SlidersHorizontal, X } from 'lucide-react';
 
@@ -20,13 +20,11 @@ export default function Home() {
     const fetchGames = async () => {
       try {
         setLoading(true);
-        const response = await axios.get('http://localhost:5000/api/games', {
-          params: { page, limit: 12, search, tag: activeTag },
-        });
-        if (response.data.success) {
-          setGames(response.data.data);
-          setTotalPages(response.data.totalPages);
-          setTotalGames(response.data.totalGames);
+        const data = await gameApi.getGames({ page, limit: 12, search, tag: activeTag });
+        if (data.success) {
+          setGames(data.data);
+          setTotalPages(data.totalPages);
+          setTotalGames(data.totalGames);
         }
       } catch (error) {
         console.error('Lỗi lấy danh sách game:', error);
