@@ -10,7 +10,7 @@ export default function Footer() {
               href="https://github.com/qckhanh195"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[#FFB830] hover:text-[#FF6B4A] transition-colors font-medium underline"
+              className="text-[#FFB830] hover:text-[#FF6B4A] transition-colors font-medium no-underline"
             >
               qckhanh195
             </a>
@@ -22,7 +22,15 @@ export default function Footer() {
 
         {/* Right side: Data source */}
         <div className="flex items-center gap-2 text-xs md:text-right font-display tracking-widest text-[#4A6180]">
-          <span>DATA FROM STEAM</span>
+          <span>DATA FROM</span>
+          <a
+            href="https://store.steampowered.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[#FFB830] hover:text-[#FF6B4A] transition-colors font-medium no-underline"
+          >
+            STEAM
+          </a>
         </div>
       </div>
     </footer>
