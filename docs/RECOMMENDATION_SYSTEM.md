@@ -80,9 +80,9 @@ Sau đó:
 1. Tính toán **Cosine Similarity** giữa $\vec{V}_{\text{Profile}}$ và tất cả các game chưa mua trong hệ thống.
 2. Áp dụng **Chuẩn hóa Min-Max (Min-Max Normalization)** để chuyển đổi điểm số thô thành phần trăm tương thích $[50\%, 98\%]$ dễ hiểu cho người dùng:
 
-$$\text{Điểm tương thích (\%)} = 50 + \left( \frac{\text{Score} - \text{Score}_{\text{min}}}{\text{Score}_{\text{max}} - \text{Score}_{\text{min}}} \right) \times 45$$
+$$\text{Điểm tương thích (\%)} = 50 + \left( \frac{\text{Score} - \text{Score}_{\min}}{\text{Score}_{\max} - \text{Score}_{\min}} \right) \times 45$$
 
-*(Trong đó $\text{Score}_{\text{max}}$ và $\text{Score}_{\text{min}}$ là điểm cao nhất và thấp nhất trong tập kết quả lọc).*
+*(Trong đó Score<sub>max</sub> và Score<sub>min</sub> là điểm cao nhất và thấp nhất trong tập kết quả lọc).*
 
 3. **Thuật toán giải thích (Explainable AI)**: Đối chiếu ngược lại để hiển thị cho người dùng biết game này khớp ở điểm nào (ví dụ: trùng tags gì, trùng nhà phát triển nào...).
 
