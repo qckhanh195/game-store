@@ -76,4 +76,4 @@ cd GamesStore
 ---
 
 ## 🧠 Tài liệu thuật toán gợi ý
-Xem hướng tiếp cận và chi tiết các bước thực hiện thuật toán tại: **[RECOMMENDATION.md](RECOMMENDATION.md)**.
+Xem hướng tiếp cận và chi tiết các bước thực hiện thuật toán tại: **[RECOMMENDATION_SYSTEM.md](docs/RECOMMENDATION_SYSTEM.md)**.
