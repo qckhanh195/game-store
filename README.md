@@ -1,4 +1,4 @@
-# GamesStore - Cửa Hàng Bán Game
+# GamesStore
 
 Dự án **GamesStore** là một ứng dụng web cửa hàng bán game hiện đại, bao gồm hai phần chính:
 * **Backend**: Xây dựng trên nền tảng Node.js, Express và kết nối cơ sở dữ liệu MongoDB.
@@ -48,10 +48,7 @@ cd GamesStore
 3. Tạo file cấu hình môi trường `.env` từ file ví dụ `.env.example`:
    * Tạo một file mới tên là `.env` nằm trực tiếp trong thư mục `backend`.
    * Copy toàn bộ nội dung từ file `.env.example` sang file `.env` vừa tạo.
-4. Cấu hình địa chỉ kết nối MongoDB trong file `backend/.env`:
-   * **Nếu chạy Database trên Cloud (MongoDB Atlas):** Cập nhật đường link kết nối của bạn vào biến `MONGO_URI` (nhớ thay đổi tài khoản, mật khẩu thực tế của bạn).
-   * **Nếu chạy Database ở Local (chạy bằng lauchpad MongoDB):** Thêm dấu `#` vào đầu dòng link Atlas và bỏ dấu `#` trước dòng địa chỉ Local.
-5. Khởi chạy Backend Server:
+4. Khởi chạy Backend Server:
    ```bash
    npm run dev
    # Hoặc chạy: npm start
