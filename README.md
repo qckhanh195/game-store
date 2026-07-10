@@ -24,34 +24,6 @@ Dự án **GamesStore** là một ứng dụng web cửa hàng bán game hiện 
 
 ---
 
-## 📁 Cấu Trúc Dự Án
-
-```text
-GamesStore/
-├── backend/            # Mã nguồn backend (API Server)
-│   ├── models/         # Mongoose schemas/models
-│   ├── routes/         # Các route xử lý API
-│   ├── .env.example    # File mẫu cấu hình biến môi trường
-│   ├── server.js       # File chạy chính của server
-│   └── package.json    # Các dependencies của backend
-│
-├── frontend/           # Mã nguồn frontend (React App)
-│   ├── public/         # Các file tĩnh (ảnh, icon...)
-│   ├── src/            # Mã nguồn React
-│   │   ├── components/ # Các component giao diện
-│   │   ├── context/    # React Context (giỏ hàng, ...)
-│   │   ├── hooks/      # Custom Hooks
-│   │   ├── services/   # Cấu hình API client (Axios)
-│   │   └── main.jsx    # Điểm khởi chạy của React
-│   ├── package.json    # Các dependencies của frontend
-│   └── vite.config.js  # Cấu hình dự án Vite
-│
-├── .gitignore          # Cấu hình các file không đẩy lên Git
-└── README.md           # Hướng dẫn dự án này
-```
-
----
-
 ## 🚀 Hướng Dẫn Cài Đặt & Chạy Dự Án
 
 ### Bước 1: Clone dự án về máy
@@ -103,22 +75,3 @@ cd GamesStore
    npm run dev
    ```
    * *Mặc định Frontend chạy tại:* `http://localhost:5173` (hoặc cổng được hiển thị trong terminal). Bạn có thể mở trình duyệt và truy cập vào địa chỉ này để sử dụng ứng dụng.
-
----
-
-## 🔒 Lưu Ý Quan Trọng Về Bảo Mật (Lưu trữ biến môi trường)
-
-> [!WARNING]
-> **Không bao giờ push file `.env` chứa mật khẩu thực tế lên GitHub.**
->
-> File `.env` chứa các thông tin nhạy cảm (như tài khoản, mật khẩu kết nối database). Để đảm bảo an toàn, dự án đã cấu hình file `.gitignore` ở thư mục gốc để bỏ qua các file `.env` này.
-
-### Xử lý nếu lỡ push file `.env` lên Git
-Nếu trước đây file `backend/.env` đã từng được push và đang bị Git theo dõi (track), hãy chạy lệnh sau từ thư mục gốc của dự án để loại bỏ nó khỏi bộ nhớ đệm của Git mà không làm mất file trên máy của bạn:
-
-```bash
-git rm --cached backend/.env
-git commit -m "Remove sensitive .env from git tracking"
-git push
-```
-Sau đó, các thành viên khác khi clone code về sẽ chỉ nhận được file cấu hình mẫu `backend/.env.example` và tự tạo file `.env` riêng trên máy của họ.
