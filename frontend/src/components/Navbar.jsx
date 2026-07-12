@@ -1,6 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useCart } from '../hooks/useCart';
-import { Gamepad2, Home, Sparkles, Grid3X3, Package, ShoppingCart } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { Gamepad2, Home, Sparkles, Grid3X3, Package, ShoppingCart, LogOut } from 'lucide-react';
 
 const tabs = [
   { to: '/', label: 'Trang chủ', icon: Home, exact: true },
@@ -11,6 +12,7 @@ const tabs = [
 
 export default function Navbar() {
   const { cartItems } = useCart();
+  const { user, logout } = useAuth();
   const location = useLocation();
 
   const isActive = (tab) => {
@@ -54,21 +56,69 @@ export default function Navbar() {
             })}
           </div>
 
-          {/* Cart icon */}
-          <Link
-            to="/cart"
-            className="relative p-2 border border-[#253549] text-[#8B9DB5]
-                       hover:border-[#FF6B4A] hover:text-[#FF6B4A] transition-all"
-          >
-            <ShoppingCart className="w-5 h-5" />
-            {cartItems.length > 0 && (
-              <span className="absolute -top-2 -right-2 bg-[#FF6B4A] text-[#0F1923]
-                               text-[10px] font-bold rounded-full w-4 h-4
-                               flex items-center justify-center animate-bounce-once">
-                {cartItems.length}
-              </span>
-            )}
-          </Link>
+          {/* Right Section: Cart & Auth */}
+          <div className="flex items-center gap-3">
+            {/* Cart icon */}
+            <Link
+              to="/cart"
+              className="relative p-2 border border-[#253549] text-[#8B9DB5]
+                         hover:border-[#FF6B4A] hover:text-[#FF6B4A] transition-all"
+            >
+              <ShoppingCart className="w-5 h-5" />
+              {cartItems.length > 0 && (
+                <span className="absolute -top-2 -right-2 bg-[#FF6B4A] text-[#0F1923]
+                                 text-[10px] font-bold rounded-full w-4 h-4
+                                 flex items-center justify-center animate-bounce-once">
+                  {cartItems.length}
+                </span>
+              )}
+            </Link>
+
+            {/* Auth control */}
+            <div className="flex items-center gap-3 pl-3 border-l border-[#253549]">
+              {user ? (
+                <div className="flex items-center gap-3">
+                  <Link
+                    to="/profile"
+                    className="flex items-center gap-2 group hover:text-[#FF6B4A] transition-colors"
+                  >
+                    <img
+                      src={user.avatar || 'https://placehold.co/150'}
+                      alt={user.name}
+                      className="w-8 h-8 rounded-full border border-[#253549] group-hover:border-[#FF6B4A] transition-colors object-cover"
+                      onError={(e) => { e.target.src = 'https://placehold.co/150'; }}
+                    />
+                    <span className="hidden md:inline text-xs font-display font-bold text-[#F0EDE6] group-hover:text-[#FF6B4A] transition-colors max-w-[100px] truncate">
+                      {user.name}
+                    </span>
+                  </Link>
+
+                  <button
+                    onClick={logout}
+                    title="Đăng xuất"
+                    className="p-2 text-[#8B9DB5] hover:text-[#F87171] transition-all cursor-pointer"
+                  >
+                    <LogOut className="w-5 h-5" />
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <Link
+                    to="/login"
+                    className="px-3 py-1.5 border border-[#253549] text-xs font-display font-bold uppercase tracking-wider text-[#8B9DB5] hover:border-[#FF6B4A] hover:text-[#FF6B4A] transition-all"
+                  >
+                    Đăng nhập
+                  </Link>
+                  <Link
+                    to="/register"
+                    className="hidden sm:inline px-3 py-1.5 bg-[#FF6B4A] text-xs font-display font-bold uppercase tracking-wider text-[#0F1923] hover:bg-[#FF6B4A]/90 transition-all"
+                  >
+                    Đăng ký
+                  </Link>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </nav>

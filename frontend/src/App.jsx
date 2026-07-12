@@ -5,6 +5,9 @@ import Cart from './pages/Cart';
 import Catalog from './pages/Catalog';
 import Recommendations from './pages/Recommendations';
 import Purchased from './pages/Purchased';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import Profile from './pages/Profile';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 
@@ -22,6 +25,9 @@ export default function App() {
             <Route path="/danh-muc" element={<Catalog />} />
             <Route path="/goi-y" element={<Recommendations />} />
             <Route path="/da-mua" element={<Purchased />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/profile" element={<Profile />} />
           </Routes>
         </main>
 

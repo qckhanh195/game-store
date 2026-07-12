@@ -9,6 +9,20 @@ const api = axios.create({
   },
 });
 
+// Tự động thêm Bearer Token vào header nếu người dùng đã đăng nhập
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('gamestore_token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
 export const gameApi = {
   getGames: (params) => api.get('/games', { params }).then((res) => res.data),
   getGameDetail: (id) => api.get(`/games/${id}`).then((res) => res.data),
