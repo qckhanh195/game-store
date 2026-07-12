@@ -3,10 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { gameApi } from '../services/api';
 import GameCard from '../components/GameCard';
 import { Search, SlidersHorizontal, X } from 'lucide-react';
+import BlurText from '../components/BlurText';
+import { useAuth } from '../context/AuthContext';
+import TiltedCard from '../components/TiltedCard';
 
 const SAMPLE_TAGS = ['Action', 'RPG', 'Strategy', 'Adventure', 'Simulation', 'Casual', 'Indie', 'Shooter'];
 
 export default function Home() {
+  const { user } = useAuth();
   const [games, setGames] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -45,17 +49,57 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-[#0F1923] text-[#F0EDE6] font-body">
       {/* Hero Header */}
-      <div className="border-b border-[#253549] bg-[#162232] px-6 py-10 animate-fade-up">
-        <div className="max-w-7xl mx-auto">
-          <p className="font-display text-sm tracking-widest text-[#FF6B4A] mb-2">
-            // GAME STORE
-          </p>
-          <h1 className="font-display text-4xl md:text-5xl font-bold text-[#F0EDE6] mb-3 leading-tight">
-            Khám phá <span className="text-[#FFB830]">thế giới game</span>
-          </h1>
-          <p className="text-[#8B9DB5] text-base max-w-lg">
-            Hàng nghìn tựa game PC — từ indie độc lập đến AAA blockbuster.
-          </p>
+      <div className="border-b border-[#253549] bg-[#162232] px-6 py-10 relative overflow-hidden animate-fade-up">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+          <div>
+            <p className="font-display text-sm tracking-widest text-[#FF6B4A] mb-2">
+              // GAME STORE
+            </p>
+            <div className="flex flex-wrap gap-x-3 font-display text-4xl md:text-5xl font-bold mb-3 leading-tight">
+              <BlurText
+                text="Khám phá"
+                delay={150}
+                animateBy="words"
+                direction="top"
+                className="text-[#F0EDE6]"
+              />
+              <BlurText
+                text="thế giới game"
+                delay={150}
+                animateBy="words"
+                direction="top"
+                className="text-[#FFB830]"
+              />
+            </div>
+            <BlurText
+              text="Hàng nghìn tựa game PC — từ indie độc lập đến AAA blockbuster."
+              delay={100}
+              animateBy="words"
+              direction="top"
+              className="text-[#8B9DB5] text-base max-w-lg mt-2"
+            />
+          </div>
+          <div className="relative h-[300px] md:h-[400px] w-full flex items-center justify-center">
+            <TiltedCard
+              imageSrc={user?.avatar || "https://i.scdn.co/image/ab67616d0000b273d9985092cd88bffd97653b58"}
+              altText={user?.customId || "Guest"}
+              captionText={user?.name || "Khách"}
+              containerHeight="300px"
+              containerWidth="300px"
+              imageHeight="300px"
+              imageWidth="300px"
+              rotateAmplitude={12}
+              scaleOnHover={1.05}
+              showMobileWarning={false}
+              showTooltip
+              displayOverlayContent
+              overlayContent={
+                <p className="tilted-card-demo-text bg-black/60 backdrop-blur-md text-[#FFB830] border border-[#253549] px-3 py-1.5 text-xs font-display font-bold uppercase tracking-wider rounded-md m-4 shadow-lg">
+                  {user?.name || "Khách ghé thăm"}
+                </p>
+              }
+            />
+          </div>
         </div>
       </div>
 

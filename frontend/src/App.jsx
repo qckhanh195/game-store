@@ -10,29 +10,38 @@ import Register from './pages/Register';
 import Profile from './pages/Profile';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import ClickSpark from './components/ClickSpark';
 
 export default function App() {
   return (
     <Router>
-      <div className="min-h-screen flex flex-col bg-[#0F1923]">
-        <Navbar />
+      <ClickSpark
+        sparkColor="#ffffff"
+        sparkSize={10}
+        sparkRadius={15}
+        sparkCount={8}
+        duration={400}
+      >
+        <div className="min-h-screen flex flex-col bg-[#0F1923]">
+          <Navbar />
 
-        <main className="flex-grow">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/game/:id" element={<GameDetail />} />
-            <Route path="/cart" element={<Cart />} />
-            <Route path="/danh-muc" element={<Catalog />} />
-            <Route path="/goi-y" element={<Recommendations />} />
-            <Route path="/da-mua" element={<Purchased />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/profile" element={<Profile />} />
-          </Routes>
-        </main>
+          <main className="flex-grow">
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/game/:id" element={<GameDetail />} />
+              <Route path="/cart" element={<Cart />} />
+              <Route path="/danh-muc" element={<Catalog />} />
+              <Route path="/goi-y" element={<Recommendations />} />
+              <Route path="/da-mua" element={<Purchased />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/profile" element={<Profile />} />
+            </Routes>
+          </main>
 
-        <Footer />
-      </div>
+          <Footer />
+        </div>
+      </ClickSpark>
     </Router>
   );
 }
