@@ -67,9 +67,16 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem(USER_KEY, JSON.stringify(newUser));
       return { success: true };
     } catch (error) {
+      console.error('Lỗi chi tiết khi đăng ký:', error);
+      let errorMsg = 'Có lỗi xảy ra trong quá trình đăng ký.';
+      if (error.response?.data?.message) {
+        errorMsg = error.response.data.message;
+      } else if (error.message) {
+        errorMsg = `Lỗi kết nối hoặc mạng: ${error.message}`;
+      }
       return {
         success: false,
-        message: error.response?.data?.message || 'Có lỗi xảy ra trong quá trình đăng ký.',
+        message: errorMsg,
       };
     }
   };
@@ -86,9 +93,16 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem(USER_KEY, JSON.stringify(newUser));
       return { success: true };
     } catch (error) {
+      console.error('Lỗi chi tiết khi đăng nhập:', error);
+      let errorMsg = 'Email hoặc mật khẩu không đúng.';
+      if (error.response?.data?.message) {
+        errorMsg = error.response.data.message;
+      } else if (error.message) {
+        errorMsg = `Lỗi kết nối hoặc mạng: ${error.message}`;
+      }
       return {
         success: false,
-        message: error.response?.data?.message || 'Email hoặc mật khẩu không đúng.',
+        message: errorMsg,
       };
     }
   };
@@ -114,9 +128,16 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem(USER_KEY, JSON.stringify(updatedUser));
       return { success: true, message: response.data.message };
     } catch (error) {
+      console.error('Lỗi chi tiết khi cập nhật Profile:', error);
+      let errorMsg = 'Có lỗi xảy ra khi cập nhật thông tin.';
+      if (error.response?.data?.message) {
+        errorMsg = error.response.data.message;
+      } else if (error.message) {
+        errorMsg = `Lỗi kết nối hoặc mạng: ${error.message}`;
+      }
       return {
         success: false,
-        message: error.response?.data?.message || 'Có lỗi xảy ra khi cập nhật thông tin.',
+        message: errorMsg,
       };
     }
   };

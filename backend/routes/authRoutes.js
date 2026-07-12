@@ -81,7 +81,7 @@ router.post('/register', async (req, res) => {
     }
   } catch (error) {
     console.error('Lỗi khi Đăng ký:', error);
-    return res.status(500).json({ message: 'Lỗi máy chủ, vui lòng thử lại sau.' });
+    return res.status(500).json({ message: `Lỗi máy chủ khi đăng ký: ${error.message}` });
   }
 });
 
@@ -134,7 +134,7 @@ router.post('/login', async (req, res) => {
     });
   } catch (error) {
     console.error('Lỗi khi Đăng nhập:', error);
-    return res.status(500).json({ message: 'Lỗi máy chủ, vui lòng thử lại sau.' });
+    return res.status(500).json({ message: `Lỗi máy chủ khi đăng nhập: ${error.message}` });
   }
 });
 
@@ -220,7 +220,7 @@ router.put('/profile', protect, async (req, res) => {
     });
   } catch (error) {
     console.error('Lỗi khi cập nhật Profile:', error);
-    return res.status(500).json({ message: 'Lỗi máy chủ, vui lòng thử lại sau.' });
+    return res.status(500).json({ message: `Lỗi máy chủ khi cập nhật Profile: ${error.message}` });
   }
 });
 
