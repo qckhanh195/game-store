@@ -67,7 +67,7 @@ export default function Cart() {
                          hover:border-[#FF6B4A] hover:text-[#FF6B4A] transition-all"
             >
               <Gamepad2 className="w-4 h-4" />
-              Tiếp tục mua sắm
+              Tiếp tục
             </Link>
             <Link
               to="/da-mua"
