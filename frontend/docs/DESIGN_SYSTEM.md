@@ -85,10 +85,10 @@ Be Vietnam Pro: wght 400, 500, 600
 - **Section heading**: `font-display text-2xl font-semibold`
 - **Card title (game name)**: `font-display text-lg font-semibold`
 - **Body text**: `text-sm` or `text-lg` with `font-body` (default)
-- **Metadata**: `text-xs text-text-dim font-display tracking-wide`
+- **Metadata**: `text-xs text-dim font-display tracking-wide`
 - **Section marker**: `font-display text-sm tracking-widest` with accent color (e.g. `//`)
 - **Price (current)**: `font-display text-xl font-bold text-accent-amber`
-- **Price (original, discounted)**: `font-display text-sm text-text-dim line-through`
+- **Price (original, discounted)**: `font-display text-sm text-dim line-through`
 - **Discount percent**: `font-display text-xs font-bold text-bg-deep bg-accent-coral px-1.5 py-0.5`
 
 ---
@@ -145,8 +145,8 @@ Cover art must keep a consistent aspect ratio so catalog grids stay aligned:
 Design system originally had no form styling; use this for text inputs, selects:
 
 ```html
-className="w-full border border-default bg-bg-surface px-4 py-2.5
-       text-sm text-text-primary placeholder:text-text-dim
+className="w-full border border-default bg-surface px-4 py-2.5
+       text-sm text-primary placeholder:text-dim
        transition-colors focus:border-accent-coral focus:outline-none"
 ```
 
@@ -322,7 +322,7 @@ function SamplePage() {
 
             <Link
                 to="/"
-                className="mt-8 inline-flex items-center gap-2 border border-default bg-surface px-5 py-2.5 text-sm text-secondary transition hover:border-accent-coral hover:text-text-primary animate-fade-up animate-delay-3"
+                className="mt-8 inline-flex items-center gap-2 border border-default bg-surface px-5 py-2.5 text-sm text-secondary transition hover:border-accent-coral hover:text-primary animate-fade-up animate-delay-3"
             >
                 ← Home
             </Link>
@@ -363,7 +363,7 @@ function GameCard({ game }) {
                 </div>
             )}
 
-            <div className="aspect-[3/4] overflow-hidden border-b border-default bg-bg-elevated">
+            <div className="aspect-[3/4] overflow-hidden border-b border-default bg-elevated">
                 <img
                     src={coverUrl}
                     alt={title}
@@ -380,7 +380,7 @@ function GameCard({ game }) {
 
                 <div className="mt-2 flex items-center gap-2">
                     {originalPrice && (
-                        <span className="font-display text-sm text-text-dim line-through">
+                        <span className="font-display text-sm text-dim line-through">
                             {originalPrice.toLocaleString("vi-VN")}₫
                         </span>
                     )}
