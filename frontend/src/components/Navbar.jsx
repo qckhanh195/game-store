@@ -80,7 +80,7 @@ export default function Navbar() {
                 <div className="flex items-center gap-3">
                   <Link
                     to="/profile"
-                    className="flex items-center gap-2 group hover:text-[#FF6B4A] transition-colors"
+                    className="flex items-center group hover:text-[#FF6B4A] transition-colors"
                   >
                     <img
                       src={user.avatar || 'https://placehold.co/150'}
@@ -88,9 +88,6 @@ export default function Navbar() {
                       className="w-8 h-8 rounded-full border border-[#253549] group-hover:border-[#FF6B4A] transition-colors object-cover"
                       onError={(e) => { e.target.src = 'https://placehold.co/150'; }}
                     />
-                    <span className="hidden md:inline text-xs font-display font-bold text-[#F0EDE6] group-hover:text-[#FF6B4A] transition-colors max-w-[100px] truncate">
-                      {user.name}
-                    </span>
                   </Link>
 
                   <button

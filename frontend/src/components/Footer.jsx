@@ -1,6 +1,6 @@
 export default function Footer() {
   return (
-    <footer className="border-t border-[#253549] bg-[#162232] py-8 px-6 mt-16 font-body text-[#8B9DB5]">
+    <footer className="border-t border-[#253549] bg-[#162232] py-8 px-6 mt-8 font-body text-[#8B9DB5]">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
         {/* Left side: Vibe credits */}
         <div className="flex flex-col gap-1 text-center md:text-left">

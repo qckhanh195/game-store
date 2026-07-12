@@ -49,7 +49,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-[#0F1923] text-[#F0EDE6] font-body">
       {/* Hero Header */}
-      <div className="border-b border-[#253549] bg-[#162232] px-6 py-10 relative overflow-hidden animate-fade-up">
+      <div className="border-b border-[#253549] bg-[#162232] px-6 py-0 relative overflow-hidden animate-fade-up">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
           <div>
             <p className="font-display text-sm tracking-widest text-[#FF6B4A] mb-2">
