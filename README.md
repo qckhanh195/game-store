@@ -27,19 +27,6 @@ Dự án **GamesStore** là một ứng dụng web cửa hàng bán game hiện 
 
 ---
 
-## 🔑 Tính Năng Xác Thực & Quản Lý Tài Khoản
-
-Hệ thống được phát triển hoàn chỉnh với các tính năng:
-1. **Đăng ký (Register)**: Cho phép người dùng đăng ký bằng Tên hiển thị, Email và Mật khẩu. Mật khẩu được băm bảo mật bằng `bcryptjs` trước khi lưu vào DB.
-2. **Đăng nhập (Login)**: Xác thực email và mật khẩu, thiết lập HttpOnly Cookie dự phòng đồng thời trả về mã JWT Token lưu trữ ở Client-side.
-3. **Bảo vệ Routes (Auth Middleware)**: Middleware `protect` ở Backend giúp xác thực token JWT gửi kèm qua header `Authorization: Bearer <token>` để bảo vệ các tuyến đường dữ liệu nhạy cảm.
-4. **Quản lý tài khoản (Profile Management)**:
-   - Cho phép thay đổi tên hiển thị (Username).
-   - Thiết lập/Thay đổi ID người dùng tùy chọn (`customId`), đảm bảo tính duy nhất không trùng lặp toàn hệ thống.
-   - Cập nhật Ảnh đại diện (Avatar) linh hoạt: Nhập link ảnh trực tiếp hoặc chọn tải ảnh lên từ thiết bị (đọc file dưới dạng chuỗi base64 và đồng bộ qua API).
-
----
-
 ## 🚀 Hướng Dẫn Cài Đặt & Chạy Dự Án
 
 ### Bước 1: Clone dự án về máy
