@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const Game = require('../models/Game');
+const User = require('../models/User');
+const { protect } = require('../middleware/authMiddleware');
 
 // 1. API: Lấy danh sách game kèm Phân trang + Tìm kiếm + Bộ lọc
 // URL mẫu: /api/games?page=1&limit=12&search=cyberpunk&tag=Action&category=Multiplayer&developer=Valve&maxPrice=500000
@@ -118,7 +120,7 @@ router.get('/:id', async (req, res) => {
 
 // 4. API: Mua hàng / Thanh toán Demo
 // URL: POST /api/games/checkout
-router.post('/checkout', async (req, res) => {
+router.post('/checkout', protect, async (req, res) => {
   try {
     const { items } = req.body;
 
@@ -147,6 +149,19 @@ router.post('/checkout', async (req, res) => {
       );
     }
 
+    // Cập nhật game đã mua cho user trong db
+    const user = await User.findById(req.user._id);
+    console.log("DEBUG: Checkout user ID:", req.user._id, "Found user in DB:", !!user);
+    if (user) {
+      const purchasedIds = items.map(item => Number(item.id));
+      console.log("DEBUG: Checkout purchasedIds:", purchasedIds);
+      const currentPurchased = user.purchasedGames || [];
+      const newPurchased = [...new Set([...currentPurchased, ...purchasedIds])];
+      user.purchasedGames = newPurchased;
+      await user.save();
+      console.log("DEBUG: Checkout saved user.purchasedGames:", user.purchasedGames);
+    }
+
     res.json({ success: true, message: 'Thanh toán đơn hàng demo thành công! Kho hàng đã được cập nhật.' });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -155,7 +170,7 @@ router.post('/checkout', async (req, res) => {
 
 // 5. API: Khôi phục kho hàng khi reset game đã mua
 // URL: POST /api/games/reset-purchases
-router.post('/reset-purchases', async (req, res) => {
+router.post('/reset-purchases', protect, async (req, res) => {
   try {
     const { gameIds } = req.body;
 
@@ -174,6 +189,14 @@ router.post('/reset-purchases', async (req, res) => {
           }
         }
       );
+    }
+
+    // Cập nhật profile của user trong DB
+    const user = await User.findById(req.user._id);
+    if (user) {
+      user.purchasedGames = (user.purchasedGames || []).filter(id => !gameIds.includes(id));
+      user.excludedGames = (user.excludedGames || []).filter(id => !gameIds.includes(id));
+      await user.save();
     }
 
     res.json({ success: true, message: 'Đã hoàn trả số lượng game vào kho thành công!' });

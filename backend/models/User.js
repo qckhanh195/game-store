@@ -5,7 +5,9 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true },
   name: { type: String, required: true },
   customId: { type: String, unique: true, sparse: true },
-  avatar: { type: String, default: "https://placehold.co/150" }
+  avatar: { type: String, default: "https://placehold.co/150" },
+  purchasedGames: { type: [Number], default: [] },
+  excludedGames: { type: [Number], default: [] }
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', userSchema);

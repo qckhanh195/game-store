@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../hooks/useCart';
+import { useAuth } from '../context/AuthContext';
 import { gameApi } from '../services/api';
 import {
   Trash2, ShoppingBag, ArrowRight, CheckCircle2, AlertCircle,
@@ -9,6 +10,8 @@ import {
 
 export default function Cart() {
   const { cartItems, removeFromCart, clearCart, addToPurchased } = useCart();
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
@@ -22,6 +25,11 @@ export default function Cart() {
 
   const handleCheckout = async () => {
     if (cartItems.length === 0) return;
+    if (!user) {
+      setErrorMsg('Vui lòng đăng nhập để thực hiện thanh toán.');
+      navigate('/login');
+      return;
+    }
     setLoading(true);
     setErrorMsg('');
     setSuccessMsg('');
@@ -213,20 +221,31 @@ export default function Cart() {
                   </div>
                 </div>
 
-                <button
-                  disabled={loading}
-                  onClick={handleCheckout}
-                  className="w-full py-3.5 bg-[#FF6B4A] text-[#0F1923] font-display font-bold
-                             text-sm tracking-widest flex items-center justify-center gap-2
-                             hover:bg-[#FF6B4A]/90 disabled:opacity-40 disabled:cursor-not-allowed
-                             transition-colors cursor-pointer"
-                >
-                  {loading ? (
-                    <><RefreshCw className="w-4 h-4 animate-spin" /> Đang xử lý...</>
-                  ) : (
-                    <>Thanh toán ngay <ArrowRight className="w-4 h-4" /></>
-                  )}
-                </button>
+                {!user ? (
+                  <Link
+                    to="/login"
+                    className="w-full py-3.5 bg-[#FF6B4A]/20 border border-[#FF6B4A]/50 text-[#FF6B4A] font-display font-bold
+                               text-sm tracking-widest flex items-center justify-center gap-2
+                               hover:bg-[#FF6B4A]/30 transition-colors"
+                  >
+                    Đăng nhập để thanh toán
+                  </Link>
+                ) : (
+                  <button
+                    disabled={loading}
+                    onClick={handleCheckout}
+                    className="w-full py-3.5 bg-[#FF6B4A] text-[#0F1923] font-display font-bold
+                               text-sm tracking-widest flex items-center justify-center gap-2
+                               hover:bg-[#FF6B4A]/90 disabled:opacity-40 disabled:cursor-not-allowed
+                               transition-colors cursor-pointer"
+                  >
+                    {loading ? (
+                      <><RefreshCw className="w-4 h-4 animate-spin" /> Đang xử lý...</>
+                    ) : (
+                      <>Thanh toán ngay <ArrowRight className="w-4 h-4" /></>
+                    )}
+                  </button>
+                )}
 
                 <p className="text-center text-[10px] text-[#4A6180] mt-4 leading-relaxed">
                   Bằng cách nhấn thanh toán, bạn đồng ý với Điều khoản dịch vụ của GameStore.

@@ -9,6 +9,7 @@ const AuthContext = createContext({
   register: async () => {},
   logout: async () => {},
   updateProfile: async () => {},
+  syncUser: async () => {},
 });
 
 const TOKEN_KEY = 'gamestore_token';
@@ -142,6 +143,18 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Đồng bộ thông tin tài khoản từ backend
+  const syncUser = async () => {
+    try {
+      const response = await api.get('/auth/profile');
+      const freshUser = response.data.user;
+      setUser(freshUser);
+      localStorage.setItem(USER_KEY, JSON.stringify(freshUser));
+    } catch (error) {
+      console.error('Không thể đồng bộ thông tin tài khoản:', error);
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -152,6 +165,7 @@ export const AuthProvider = ({ children }) => {
         register,
         logout,
         updateProfile,
+        syncUser,
       }}
     >
       {children}

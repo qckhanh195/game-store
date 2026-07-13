@@ -3,7 +3,22 @@ const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const Game = require('../models/Game');
 const { protect } = require('../middleware/authMiddleware');
+
+// Hàm lấy dữ liệu đầy đủ của user (kèm game đã mua)
+const getFullUserResponse = async (user) => {
+  const purchasedGamesData = await Game.find({ id: { $in: user.purchasedGames || [] } });
+  return {
+    id: user._id,
+    name: user.name,
+    email: user.email,
+    customId: user.customId,
+    avatar: user.avatar,
+    purchasedGames: purchasedGamesData,
+    excludedGames: user.excludedGames || []
+  };
+};
 
 // Hàm tạo JWT Token
 const generateToken = (id) => {
@@ -68,13 +83,7 @@ router.post('/register', async (req, res) => {
       return res.status(201).json({
         message: 'Đăng ký tài khoản thành công.',
         token,
-        user: {
-          id: user._id,
-          name: user.name,
-          email: user.email,
-          customId: user.customId,
-          avatar: user.avatar,
-        },
+        user: await getFullUserResponse(user),
       });
     } else {
       return res.status(400).json({ message: 'Thông tin người dùng không hợp lệ.' });
@@ -124,13 +133,7 @@ router.post('/login', async (req, res) => {
     return res.status(200).json({
       message: 'Đăng nhập thành công.',
       token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        customId: user.customId,
-        avatar: user.avatar,
-      },
+      user: await getFullUserResponse(user),
     });
   } catch (error) {
     console.error('Lỗi khi Đăng nhập:', error);
@@ -146,13 +149,7 @@ router.post('/login', async (req, res) => {
 router.get('/profile', protect, async (req, res) => {
   try {
     return res.status(200).json({
-      user: {
-        id: req.user._id,
-        name: req.user.name,
-        email: req.user.email,
-        customId: req.user.customId,
-        avatar: req.user.avatar,
-      },
+      user: await getFullUserResponse(req.user),
     });
   } catch (error) {
     console.error('Lỗi khi lấy Profile:', error);
@@ -172,7 +169,7 @@ router.put('/profile', protect, async (req, res) => {
       return res.status(404).json({ message: 'Không tìm thấy thông tin người dùng.' });
     }
 
-    const { name, customId, avatar } = req.body;
+    const { name, customId, avatar, excludedGames } = req.body;
 
     // Cập nhật tên hiển thị
     if (name) {
@@ -206,17 +203,16 @@ router.put('/profile', protect, async (req, res) => {
       user.avatar = avatar;
     }
 
+    // Cập nhật excludedGames
+    if (excludedGames !== undefined) {
+      user.excludedGames = excludedGames;
+    }
+
     const updatedUser = await user.save();
 
     return res.status(200).json({
       message: 'Cập nhật tài khoản thành công.',
-      user: {
-        id: updatedUser._id,
-        name: updatedUser.name,
-        email: updatedUser.email,
-        customId: updatedUser.customId,
-        avatar: updatedUser.avatar,
-      },
+      user: await getFullUserResponse(updatedUser),
     });
   } catch (error) {
     console.error('Lỗi khi cập nhật Profile:', error);

@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { CartContext } from './CartContext';
 import { gameApi } from '../services/api';
+import { useAuth } from './AuthContext';
 
 const PURCHASED_KEY = 'gamestore_purchased';
 const EXCLUDED_KEY = 'gamestore_profile_excluded';
@@ -40,9 +41,21 @@ function saveExcluded(set) {
 }
 
 export const CartProvider = ({ children }) => {
+  const { user, updateProfile, syncUser } = useAuth();
   const [cartItems, setCartItems] = useState([]);
   const [purchasedGames, setPurchasedGames] = useState(loadPurchased);
   const [profileExcluded, setProfileExcluded] = useState(loadExcluded);
+
+  // Đồng bộ hóa trạng thái game đã mua khi người dùng thay đổi hoặc đăng nhập
+  useEffect(() => {
+    if (user) {
+      setPurchasedGames(user.purchasedGames || []);
+      setProfileExcluded(new Set(user.excludedGames || []));
+    } else {
+      setPurchasedGames(loadPurchased());
+      setProfileExcluded(loadExcluded());
+    }
+  }, [user]);
 
   const addToCart = (game) => {
     setCartItems((prev) => {
@@ -58,19 +71,24 @@ export const CartProvider = ({ children }) => {
 
   const clearCart = () => setCartItems([]);
 
-  // Lưu danh sách game đã mua vào state + localStorage
-  const addToPurchased = (items) => {
-    setPurchasedGames((prev) => {
-      const existing = new Set(prev.map((g) => g.id));
-      const newItems = items.filter((g) => !existing.has(g.id));
-      const updated = [...prev, ...newItems];
-      savePurchased(updated);
-      return updated;
-    });
+  // Lưu danh sách game đã mua vào state + localStorage / DB
+  const addToPurchased = async (items) => {
+    if (user) {
+      await syncUser();
+    } else {
+      setPurchasedGames((prev) => {
+        const existing = new Set(prev.map((g) => g.id));
+        const newItems = items.filter((g) => !existing.has(g.id));
+        const updated = [...prev, ...newItems];
+        savePurchased(updated);
+        return updated;
+      });
+    }
   };
 
   // Toggle game khỏi profile gợi ý (không xóa khỏi thư viện)
-  const toggleProfileExclude = (gameId) => {
+  const toggleProfileExclude = async (gameId) => {
+    let nextExcluded;
     setProfileExcluded((prev) => {
       const next = new Set(prev);
       if (next.has(gameId)) {
@@ -78,9 +96,20 @@ export const CartProvider = ({ children }) => {
       } else {
         next.add(gameId);
       }
-      saveExcluded(next);
+      nextExcluded = [...next];
+      if (!user) {
+        saveExcluded(next);
+      }
       return next;
     });
+
+    if (user) {
+      try {
+        await updateProfile({ excludedGames: nextExcluded });
+      } catch (err) {
+        console.error('Lỗi khi cập nhật danh sách loại trừ:', err);
+      }
+    }
   };
 
   // Reset toàn bộ danh sách game đã mua và khôi phục kho hàng backend
@@ -90,13 +119,17 @@ export const CartProvider = ({ children }) => {
       if (gameIds.length > 0) {
         await gameApi.resetPurchases(gameIds);
       }
+      if (user) {
+        await syncUser();
+      } else {
+        setPurchasedGames([]);
+        savePurchased([]);
+        setProfileExcluded(new Set());
+        saveExcluded(new Set());
+      }
     } catch (err) {
       console.error('Lỗi khi khôi phục kho hàng backend:', err);
     }
-    setPurchasedGames([]);
-    savePurchased([]);
-    setProfileExcluded(new Set());
-    saveExcluded(new Set());
   };
 
   // Game dùng làm profile = đã mua nhưng chưa bị loại

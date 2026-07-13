@@ -16,10 +16,10 @@ export default function Register() {
   const { register, user } = useAuth();
   const navigate = useNavigate();
 
-  // Nếu người dùng đã đăng nhập, tự động chuyển hướng về trang chủ
+  // Nếu người dùng đã đăng nhập, tự động chuyển hướng về trang cá nhân
   useEffect(() => {
     if (user) {
-      navigate('/');
+      navigate('/profile');
     }
   }, [user, navigate]);
 
@@ -58,7 +58,7 @@ export default function Register() {
     setIsSubmitting(false);
 
     if (result.success) {
-      navigate('/');
+      navigate('/profile');
     } else {
       setError(result.message);
     }
