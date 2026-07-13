@@ -84,7 +84,7 @@ export default function Home() {
               <TiltedCard
                 imageSrc={user.avatar || "https://i.scdn.co/image/ab67616d0000b273d9985092cd88bffd97653b58"}
                 altText={user.customId || "User"}
-                captionText={user.name || "User"}
+                captionText={user.customId || "User"}
                 containerHeight="300px"
                 containerWidth="300px"
                 imageHeight="300px"
