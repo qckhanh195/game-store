@@ -133,20 +133,6 @@ router.post('/checkout', protect, async (req, res) => {
       if (!game) {
         return res.status(404).json({ success: false, message: `Game ID ${item.id} không tồn tại` });
       }
-
-      if (game.stock < item.quantity) {
-        return res.status(400).json({ success: false, message: `Game ${game.name} đã hết hàng hoặc không đủ số lượng tồn kho!` });
-      }
-
-      await Game.updateOne(
-        { id: item.id },
-        {
-          $inc: {
-            stock: -item.quantity,
-            sold: item.quantity
-          }
-        }
-      );
     }
 
     // Cập nhật game đã mua cho user trong db
@@ -176,19 +162,6 @@ router.post('/reset-purchases', protect, async (req, res) => {
 
     if (!gameIds || gameIds.length === 0) {
       return res.json({ success: true, message: 'Thư viện đã trống.' });
-    }
-
-    // Tăng lại stock và giảm sold tương ứng
-    for (let id of gameIds) {
-      await Game.updateOne(
-        { id: id },
-        {
-          $inc: {
-            stock: 1,
-            sold: -1
-          }
-        }
-      );
     }
 
     // Cập nhật profile của user trong DB

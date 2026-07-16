@@ -17,8 +17,6 @@ const gameSchema = new mongoose.Schema({
   tags: [String],
   is_free: Boolean,
   description: String,
-  stock: { type: Number, default: 10 },
-  sold: { type: Number, default: 0 }
 });
 
 module.exports = mongoose.model('Game', gameSchema, 'games');
