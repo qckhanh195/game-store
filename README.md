@@ -82,8 +82,3 @@ cd GamesStore
    npm run dev
    ```
    * *Mặc định Frontend chạy tại:* `http://localhost:5173` (hoặc cổng được hiển thị trong terminal). Bạn có thể mở trình duyệt và truy cập vào địa chỉ này để sử dụng ứng dụng.
-
----
-
-## 🧠 Tài liệu thuật toán gợi ý
-Xem hướng tiếp cận và chi tiết các bước thực hiện thuật toán tại: **[RECOMMENDATION_SYSTEM.md](docs/RECOMMENDATION_SYSTEM.md)**.
