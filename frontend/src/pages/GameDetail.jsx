@@ -3,10 +3,13 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { gameApi } from '../services/api';
 import { useCart } from '../hooks/useCart';
 import { getSimilarGames } from '../hooks/useRecommendations';
+import BlurText from '../components/BlurText';
 import GameCard from '../components/GameCard';
 import {
   ArrowLeft, ShoppingCart, Calendar, User, Building,
   Layers, Star, Loader2, Check, HelpCircle, Sparkles, Tag, Grid3X3,
+  Monitor, Apple, Terminal, Trophy, ThumbsUp, ThumbsDown,
+  Users, Clock, Mic, BarChart
 } from 'lucide-react';
 
 export default function GameDetail() {
@@ -20,6 +23,11 @@ export default function GameDetail() {
   const [similarGames, setSimilarGames] = useState([]);
   const [allGames, setAllGames] = useState([]);
 
+  const formatPrice = (price) => {
+    if (!price || price === 0) return 'Miễn phí';
+    return `$${price.toFixed(2)}`;
+  };
+
   // Fetch game detail
   useEffect(() => {
     const fetchGameDetail = async () => {
@@ -30,7 +38,7 @@ export default function GameDetail() {
         if (data.success) {
           const g = data.data;
           setGame(g);
-          setActiveImage(g.screenshots?.length > 0 ? g.screenshots[0] : g.header_img);
+          setActiveImage(g.screenshots?.length > 0 ? g.screenshots[0] : g.header_image);
         } else {
           setError('Không tìm thấy thông tin trò chơi.');
         }
@@ -90,18 +98,23 @@ export default function GameDetail() {
     );
   }
 
-  const isInCart = cartItems.some((item) => item.id === game.id);
-  const isPurchased = purchasedGames.some((g) => g.id === game.id);
+  const isInCart = cartItems.some((item) => item._id === game._id);
+  const isPurchased = purchasedGames.some((g) => g._id === game._id);
 
   const handleTagClick = (tag) => navigate(`/danh-muc?tag=${encodeURIComponent(tag)}`);
   const handleCategoryClick = (cat) => navigate(`/danh-muc?category=${encodeURIComponent(cat)}`);
   const handleDeveloperClick = (dev) => navigate(`/danh-muc?developer=${encodeURIComponent(dev)}`);
 
+  const developerDisplay = game.developers?.join(', ') || 'N/A';
+  const publisherDisplay = game.publishers?.join(', ') || 'N/A';
+  const totalReviews = (game.positive || 0) + (game.negative || 0);
+  const reviewPercent = totalReviews > 0 ? Math.round((game.positive / totalReviews) * 100) : 0;
+
   return (
     <div className="min-h-screen bg-[#0F1923] text-[#F0EDE6] font-body">
       {/* Blurred banner */}
       <div className="absolute top-0 left-0 w-full h-80 overflow-hidden -z-10 select-none pointer-events-none opacity-15">
-        <img src={game.header_img} alt="" className="w-full h-full object-cover filter blur-[80px]" />
+        <img src={game.header_image} alt="" className="w-full h-full object-cover filter blur-[80px]" />
         <div className="absolute inset-0 bg-gradient-to-t from-[#0F1923] via-[#0F1923]/60 to-transparent" />
       </div>
 
@@ -166,25 +179,53 @@ export default function GameDetail() {
                       NỔI BẬT
                     </span>
                   )}
-                  {game.stock === 0 && (
-                    <span className="text-xs font-display text-[#F87171] border border-[#F87171]/30 px-2 py-1">
-                      HẾT HÀNG
+                  {game.discount > 0 && (
+                    <span className="text-xs font-display text-[#4ADE80] border border-[#4ADE80]/30 px-2 py-1">
+                      -{game.discount}%
                     </span>
                   )}
                 </div>
 
-                <h1 className="font-display text-2xl md:text-3xl font-bold text-[#F0EDE6] leading-tight mb-3">
-                  {game.name}
-                </h1>
+                <div className="font-display text-2xl md:text-3xl font-bold text-[#F0EDE6] leading-tight mb-3">
+                  <BlurText text={game.name} delay={150} animateBy="words" direction="top" className="text-[#F0EDE6]" />
+                </div>
 
                 {/* Score */}
-                {game.user_score && (
-                  <div className="flex items-center gap-1.5 mb-6">
+                {game.user_score > 0 && (
+                  <div className="flex items-center gap-1.5 mb-4">
                     <Star className="w-4 h-4 text-[#FFB830] fill-[#FFB830]" />
                     <span className="font-display text-sm font-bold text-[#FFB830]">
                       {game.user_score}
                     </span>
                     <span className="text-xs text-[#4A6180]">/ điểm người dùng</span>
+                  </div>
+                )}
+
+                {/* Reviews */}
+                {totalReviews > 0 && (
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="flex items-center gap-1">
+                      <ThumbsUp className="w-3.5 h-3.5 text-[#4ADE80]" />
+                      <span className="text-xs text-[#4ADE80] font-display">{game.positive?.toLocaleString()}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <ThumbsDown className="w-3.5 h-3.5 text-[#F87171]" />
+                      <span className="text-xs text-[#F87171] font-display">{game.negative?.toLocaleString()}</span>
+                    </div>
+                    <span className="text-[10px] text-[#4A6180] font-display">({reviewPercent}% tích cực)</span>
+                  </div>
+                )}
+
+                {/* Metacritic */}
+                {game.metacritic_score > 0 && (
+                  <div className="flex items-center gap-2 mb-4">
+                    <span className={`inline-flex items-center justify-center w-8 h-8 font-display font-bold text-sm border
+                      ${game.metacritic_score >= 75 ? 'border-[#4ADE80] text-[#4ADE80]' :
+                        game.metacritic_score >= 50 ? 'border-[#FFB830] text-[#FFB830]' :
+                        'border-[#F87171] text-[#F87171]'}`}>
+                      {game.metacritic_score}
+                    </span>
+                    <span className="text-xs text-[#4A6180]">Metacritic</span>
                   </div>
                 )}
 
@@ -198,18 +239,38 @@ export default function GameDetail() {
                     <User className="w-4 h-4 text-[#4A6180] shrink-0 mt-0.5" />
                     <span>
                       Phát triển:{' '}
-                      <button
-                        onClick={() => handleDeveloperClick(game.developer)}
-                        className="text-[#38BDF8] hover:text-[#FF6B4A] transition-colors font-medium link-underline"
-                      >
-                        {game.developer || 'N/A'}
-                      </button>
+                      {game.developers && game.developers.length > 0 ? (
+                        game.developers.map((dev, i) => (
+                          <span key={dev}>
+                            <button
+                              onClick={() => handleDeveloperClick(dev)}
+                              className="text-[#38BDF8] hover:text-[#FF6B4A] transition-colors font-medium link-underline"
+                            >
+                              {dev}
+                            </button>
+                            {i < game.developers.length - 1 && ', '}
+                          </span>
+                        ))
+                      ) : 'N/A'}
                     </span>
                   </div>
                   <div className="flex items-start gap-3">
                     <Building className="w-4 h-4 text-[#4A6180] shrink-0 mt-0.5" />
-                    <span>Phát hành: <strong className="text-[#F0EDE6]">{game.publisher || 'N/A'}</strong></span>
+                    <span>Phát hành: <strong className="text-[#F0EDE6]">{publisherDisplay}</strong></span>
                   </div>
+                  {/* Platform support */}
+                  <div className="flex items-center gap-3">
+                    {game.windows && <Monitor className="w-4 h-4 text-[#38BDF8]" title="Windows" />}
+                    {game.mac && <Apple className="w-4 h-4 text-[#8B9DB5]" title="macOS" />}
+                    {game.linux && <Terminal className="w-4 h-4 text-[#FFB830]" title="Linux" />}
+                  </div>
+                  {/* Achievements */}
+                  {game.achievements > 0 && (
+                    <div className="flex items-start gap-3">
+                      <Trophy className="w-4 h-4 text-[#FFB830] shrink-0 mt-0.5" />
+                      <span>{game.achievements} thành tựu</span>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -218,7 +279,7 @@ export default function GameDetail() {
                 <div className="flex justify-between items-baseline mb-4">
                   <span className="text-xs text-[#4A6180] font-display tracking-wide">GIÁ BÁN</span>
                   <span className="font-display text-2xl font-bold text-[#FFB830]">
-                    {game.price_raw === 0 ? 'Miễn phí' : game.price}
+                    {formatPrice(game.price)}
                   </span>
                 </div>
 
@@ -244,12 +305,10 @@ export default function GameDetail() {
                   </Link>
                 ) : (
                   <button
-                    disabled={game.stock === 0}
                     onClick={() => addToCart(game)}
                     className="w-full py-3 bg-[#FF6B4A] text-[#0F1923] font-display font-bold
                                text-sm tracking-widest flex items-center justify-center gap-2
-                               hover:bg-[#FF6B4A]/90 disabled:opacity-30 disabled:cursor-not-allowed
-                               transition-colors cursor-pointer"
+                               hover:bg-[#FF6B4A]/90 transition-colors cursor-pointer"
                   >
                     <ShoppingCart className="w-4 h-4" />
                     THÊM VÀO GIỎ HÀNG
@@ -271,26 +330,100 @@ export default function GameDetail() {
               </h2>
               <div
                 className="game-description"
-                dangerouslySetInnerHTML={{ __html: game.about || game.description || 'Chưa có mô tả.' }}
+                dangerouslySetInnerHTML={{ __html: game.about_the_game || game.detailed_description || game.short_description || 'Chưa có mô tả.' }}
               />
             </div>
 
-            {game.supported_languages && (
+            {game.supported_languages && game.supported_languages.length > 0 && (
               <div className="border border-[#253549] bg-[#162232] p-6">
                 <h2 className="font-display text-xl font-semibold text-[#F0EDE6] mb-4 flex items-center gap-3">
                   <span className="text-[#FFB830] font-display text-sm tracking-widest">//</span>
                   Ngôn ngữ hỗ trợ
                 </h2>
-                <div
-                  className="text-[#8B9DB5] text-sm leading-relaxed"
-                  dangerouslySetInnerHTML={{ __html: game.supported_languages }}
-                />
+                <div className="flex flex-wrap gap-2 mb-6">
+                  {game.supported_languages.map((lang) => (
+                    <span key={lang} className="text-xs font-display border border-[#253549] text-[#8B9DB5] px-2.5 py-1">
+                      {lang}
+                    </span>
+                  ))}
+                </div>
+
+                {game.full_audio_languages && game.full_audio_languages.length > 0 && (
+                  <>
+                    <h3 className="font-display text-sm font-semibold text-[#F0EDE6] mb-3 flex items-center gap-2">
+                      <Mic className="w-4 h-4 text-[#38BDF8]" />
+                      Âm thanh lồng tiếng
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                      {game.full_audio_languages.map((lang) => (
+                        <span key={`audio-${lang}`} className="text-xs font-display border border-[#38BDF8]/30 bg-[#38BDF8]/5 text-[#38BDF8] px-2.5 py-1">
+                          {lang}
+                        </span>
+                      ))}
+                    </div>
+                  </>
+                )}
               </div>
             )}
+
+            {/* Extra Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="border border-[#253549] bg-[#162232] p-5">
+                <div className="flex items-center gap-2 mb-2">
+                  <Users className="w-4 h-4 text-[#4ADE80]" />
+                  <span className="font-display text-sm tracking-widest text-[#8B9DB5]">ƯỚC TÍNH SỞ HỮU</span>
+                </div>
+                <p className="font-display text-xl font-bold text-[#F0EDE6]">
+                  {game.estimated_owners || 'N/A'}
+                </p>
+              </div>
+              <div className="border border-[#253549] bg-[#162232] p-5">
+                <div className="flex items-center gap-2 mb-2">
+                  <BarChart className="w-4 h-4 text-[#FFB830]" />
+                  <span className="font-display text-sm tracking-widest text-[#8B9DB5]">NGƯỜI CHƠI CÙNG LÚC CAO NHẤT</span>
+                </div>
+                <p className="font-display text-xl font-bold text-[#F0EDE6]">
+                  {game.peak_ccu ? game.peak_ccu.toLocaleString() : 'N/A'}
+                </p>
+              </div>
+              <div className="border border-[#253549] bg-[#162232] p-5 md:col-span-2">
+                <div className="flex items-center gap-2 mb-2">
+                  <Clock className="w-4 h-4 text-[#FF6B4A]" />
+                  <span className="font-display text-sm tracking-widest text-[#8B9DB5]">THỜI GIAN CHƠI TRUNG BÌNH</span>
+                </div>
+                <p className="font-display text-xl font-bold text-[#F0EDE6]">
+                  {game.average_playtime_forever ? `${Math.round(game.average_playtime_forever / 60)} giờ` : 'N/A'}
+                </p>
+              </div>
+            </div>
           </div>
 
-          {/* Tags + Categories + Developer */}
+          {/* Tags + Categories + Genres + Developer */}
           <div className="lg:col-span-1 space-y-6">
+            {/* Genres */}
+            {game.genres && game.genres.length > 0 && (
+              <div className="border border-[#253549] bg-[#162232] p-6">
+                <h3 className="font-display text-base font-semibold text-[#F0EDE6] mb-4 flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-[#38BDF8]" />
+                  Thể loại
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {game.genres.map((g) => (
+                    <button
+                      key={g}
+                      onClick={() => navigate(`/danh-muc?genre=${encodeURIComponent(g)}`)}
+                      className="text-xs font-display tracking-wide border border-[#253549]
+                                 text-[#8B9DB5] px-2.5 py-1 transition-all
+                                 hover:border-[#38BDF8] hover:text-[#38BDF8] hover:bg-[#38BDF8]/5
+                                 cursor-pointer"
+                    >
+                      {g}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Tags */}
             {game.tags && game.tags.length > 0 && (
               <div className="border border-[#253549] bg-[#162232] p-6">
@@ -340,18 +473,21 @@ export default function GameDetail() {
             )}
 
             {/* Developer link */}
-            {game.developer && (
+            {game.developers && game.developers.length > 0 && (
               <div className="border border-[#253549] bg-[#162232] p-6">
                 <h3 className="font-display text-base font-semibold text-[#F0EDE6] mb-3 flex items-center gap-2">
                   <Layers className="w-4 h-4 text-[#38BDF8]" />
                   Nhà phát triển
                 </h3>
-                <button
-                  onClick={() => handleDeveloperClick(game.developer)}
-                  className="font-display text-sm text-[#38BDF8] hover:text-[#FF6B4A] transition-colors link-underline"
-                >
-                  {game.developer}
-                </button>
+                {game.developers.map((dev) => (
+                  <button
+                    key={dev}
+                    onClick={() => handleDeveloperClick(dev)}
+                    className="font-display text-sm text-[#38BDF8] hover:text-[#FF6B4A] transition-colors link-underline block mb-1"
+                  >
+                    {dev}
+                  </button>
+                ))}
                 <p className="text-xs text-[#4A6180] mt-1">
                   Xem tất cả game từ nhà phát triển này →
                 </p>
@@ -377,7 +513,7 @@ export default function GameDetail() {
 
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {similarGames.map((g) => (
-                <GameCard key={g.id} game={g} />
+                <GameCard key={g._id} game={g} />
               ))}
             </div>
           </div>

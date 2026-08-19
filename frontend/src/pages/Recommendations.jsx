@@ -2,14 +2,16 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { gameApi } from '../services/api';
 import { useCart } from '../hooks/useCart';
+import { useAuth } from '../context/AuthContext';
 import { getPersonalizedRecommendations } from '../hooks/useRecommendations';
-
+import BlurText from '../components/BlurText';
 import GameCard from '../components/GameCard';
-import { Sparkles, ShoppingBag, RefreshCw, Shuffle, X, RotateCcw, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Sparkles, ShoppingBag, RefreshCw, Shuffle, X, RotateCcw, ChevronLeft, ChevronRight, LogIn } from 'lucide-react';
 
 const PAGE_SIZE = 12;
 
 export default function Recommendations() {
+  const { user } = useAuth();
   const { purchasedGames, profileGames, profileExcluded, toggleProfileExclude } = useCart();
   const [allGames, setAllGames] = useState([]);
   const [recommended, setRecommended] = useState([]);
@@ -18,6 +20,11 @@ export default function Recommendations() {
   const [recPage, setRecPage] = useState(1);
 
   useEffect(() => {
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+
     const fetchAll = async () => {
       try {
         setLoading(true);
@@ -35,7 +42,7 @@ export default function Recommendations() {
       }
     };
     fetchAll();
-  }, []);
+  }, [user]);
 
   // Cập nhật gợi ý khi profileGames hoặc allGames thay đổi, reset trang về 1
   useEffect(() => {
@@ -48,6 +55,30 @@ export default function Recommendations() {
     }
     setRecPage(1);
   }, [profileGames, allGames]);
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-[#0F1923] text-[#F0EDE6] font-body flex items-center justify-center px-6">
+        <div className="border border-[#38BDF8]/20 bg-[#38BDF8]/5 p-8 text-center max-w-md w-full animate-fade-up">
+          <LogIn className="w-12 h-12 text-[#38BDF8] mx-auto mb-4" />
+          <h3 className="font-display text-xl font-semibold text-[#F0EDE6] mb-2">
+            Vui lòng đăng nhập
+          </h3>
+          <p className="text-[#8B9DB5] text-sm mb-6">
+            Bạn cần đăng nhập để xem các gợi ý game được cá nhân hóa dành riêng cho bạn.
+          </p>
+          <Link
+            to="/login"
+            className="inline-flex items-center gap-2 bg-[#38BDF8] text-[#0F1923]
+                       font-display font-bold text-sm tracking-wide px-6 py-3
+                       hover:bg-[#38BDF8]/90 transition-colors"
+          >
+            Đăng nhập ngay
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   const hasPurchased = purchasedGames.length > 0;
   const hasRecommendations = recommended.length > 0;
@@ -69,10 +100,11 @@ export default function Recommendations() {
       <div className="border-b border-[#253549] bg-[#162232] px-6 py-10 animate-fade-up">
         <div className="max-w-7xl mx-auto">
           <p className="font-display text-sm tracking-widest text-[#38BDF8] mb-2">// GỢI Ý</p>
-          <h1 className="font-display text-4xl md:text-5xl font-bold text-[#F0EDE6] mb-3 leading-tight">
-            Game <span className="text-[#FF6B4A]">dành cho bạn</span>
-          </h1>
-          <p className="text-[#8B9DB5] text-base max-w-lg">
+          <div className="font-display text-4xl md:text-5xl font-bold mb-3 leading-tight flex flex-wrap gap-x-3">
+            <BlurText text="Game" delay={150} animateBy="words" direction="top" className="text-[#F0EDE6]" />
+            <BlurText text="dành cho bạn" delay={150} animateBy="words" direction="top" className="text-[#FF6B4A]" />
+          </div>
+          <p className="text-[#8B9DB5] text-base max-w-lg mt-2">
             {hasPurchased
               ? `Dựa trên ${profileGames.length} game bạn đã mua — thuật toán Content-Based gợi ý theo thể loại, tags và nhà phát triển.`
               : 'Mua game đầu tiên để nhận gợi ý cá nhân hoá. Hiện đang hiển thị các game nổi bật.'}
@@ -129,25 +161,25 @@ export default function Recommendations() {
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {purchasedGames.map((g) => {
-                      const isExcluded = profileExcluded.has(g.id);
+                      const isExcluded = profileExcluded.has(g._id);
                       return (
                         <div
-                          key={g.id}
+                          key={g._id}
                           className={`group/chip relative flex items-center gap-1.5 border px-2 py-1 transition-all duration-200
                             ${isExcluded
                               ? 'border-[#4A6180]/40 opacity-40 grayscale'
                               : 'border-[#253549] hover:border-[#FFB830]'
                             }`}
                         >
-                          <Link to={`/game/${g.id}`} className="flex items-center gap-1.5">
-                            <img src={g.header_img} alt={g.name} className="w-8 h-5 object-cover" />
+                          <Link to={`/game/${g._id}`} className="flex items-center gap-1.5">
+                            <img src={g.header_image} alt={g.name} className="w-8 h-5 object-cover" />
                             <span className="text-[10px] font-display text-[#8B9DB5] truncate max-w-24">{g.name}</span>
                           </Link>
                           <button
                             onClick={(e) => {
                               e.preventDefault();
                               e.stopPropagation();
-                              toggleProfileExclude(g.id);
+                              toggleProfileExclude(g._id);
                             }}
                             title={isExcluded ? 'Khôi phục vào profile gợi ý' : 'Bỏ khỏi profile gợi ý'}
                             className={`ml-0.5 w-4 h-4 flex items-center justify-center rounded-full transition-all
@@ -179,7 +211,7 @@ export default function Recommendations() {
                     <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                       {pagedRecs.map((game, i) => (
                         <div
-                          key={game.id}
+                          key={game._id}
                           className="animate-fade-up"
                           style={{ animationDelay: `${i * 40}ms` }}
                         >
@@ -298,7 +330,7 @@ export default function Recommendations() {
               <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {trendingGames.map((game, i) => (
                   <div
-                    key={game.id}
+                    key={game._id}
                     className="animate-fade-up"
                     style={{ animationDelay: `${i * 60}ms` }}
                   >

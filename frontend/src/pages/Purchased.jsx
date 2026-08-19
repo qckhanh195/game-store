@@ -1,10 +1,13 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../hooks/useCart';
-import { Package, ArrowRight, Gamepad2, Calendar, User, RotateCcw, AlertTriangle, Loader2 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import BlurText from '../components/BlurText';
+import { Package, ArrowRight, Gamepad2, Calendar, User, RotateCcw, AlertTriangle, Loader2, LogIn } from 'lucide-react';
 
 export default function Purchased() {
   const { purchasedGames, resetPurchased } = useCart();
+  const { user } = useAuth();
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [resetting, setResetting] = useState(false);
 
@@ -20,10 +23,34 @@ export default function Purchased() {
     }
   };
 
-  const formatPrice = (rawPrice) => {
-    if (!rawPrice || rawPrice === 0) return 'Miễn phí';
-    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(rawPrice / 100);
+  const formatPrice = (price) => {
+    if (!price || price === 0) return 'Miễn phí';
+    return `$${price.toFixed(2)}`;
   };
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-[#0F1923] text-[#F0EDE6] font-body flex items-center justify-center px-6">
+        <div className="border border-[#FFB830]/20 bg-[#FFB830]/5 p-8 text-center max-w-md w-full animate-fade-up">
+          <LogIn className="w-12 h-12 text-[#FFB830] mx-auto mb-4" />
+          <h3 className="font-display text-xl font-semibold text-[#F0EDE6] mb-2">
+            Vui lòng đăng nhập
+          </h3>
+          <p className="text-[#8B9DB5] text-sm mb-6">
+            Bạn cần đăng nhập để xem danh sách game đã mua và thư viện của mình.
+          </p>
+          <Link
+            to="/login"
+            className="inline-flex items-center gap-2 bg-[#FFB830] text-[#0F1923]
+                       font-display font-bold text-sm tracking-wide px-6 py-3
+                       hover:bg-[#FFB830]/90 transition-colors"
+          >
+            Đăng nhập ngay
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#0F1923] text-[#F0EDE6] font-body">
@@ -32,9 +59,10 @@ export default function Purchased() {
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
           <div>
             <p className="font-display text-sm tracking-widest text-[#4ADE80] mb-2">// ĐÃ MUA</p>
-            <h1 className="font-display text-4xl md:text-5xl font-bold text-[#F0EDE6] mb-3 leading-tight">
-              Game của <span className="text-[#4ADE80]">bạn</span>
-            </h1>
+            <div className="font-display text-4xl md:text-5xl font-bold mb-3 leading-tight flex flex-wrap gap-x-3">
+              <BlurText text="Game của" delay={150} animateBy="words" direction="top" className="text-[#F0EDE6]" />
+              <BlurText text="bạn" delay={150} animateBy="words" direction="top" className="text-[#4ADE80]" />
+            </div>
             <p className="text-[#8B9DB5] text-base">
               {purchasedGames.length > 0
                 ? `Bạn đang sở hữu ${purchasedGames.length} tựa game.`
@@ -87,7 +115,7 @@ export default function Purchased() {
               <div className="border border-[#253549] bg-[#162232] p-5">
                 <p className="font-display text-xs tracking-widest text-[#4A6180] mb-1">TỔNG CHI PHÍ</p>
                 <p className="font-display text-3xl font-bold text-[#FFB830]">
-                  {formatPrice(purchasedGames.reduce((s, g) => s + (g.price_raw || 0), 0))}
+                  {formatPrice(purchasedGames.reduce((s, g) => s + (g.price || 0), 0))}
                 </p>
               </div>
               <div className="border border-[#253549] bg-[#162232] p-5 col-span-2 md:col-span-1">
@@ -117,18 +145,18 @@ export default function Purchased() {
             <div className="space-y-3 animate-fade-up animate-delay-3">
               {purchasedGames.map((game, i) => (
                 <div
-                  key={game.id}
+                  key={game._id}
                   className="border border-[#253549] bg-[#162232] p-4 flex gap-5
                              hover:border-[#4ADE80]/30 hover:bg-[#1E2F42] transition-all group"
                   style={{ animationDelay: `${i * 40}ms` }}
                 >
                   {/* Cover */}
                   <Link
-                    to={`/game/${game.id}`}
+                    to={`/game/${game._id}`}
                     className="w-32 md:w-44 aspect-video overflow-hidden shrink-0 border border-[#253549]"
                   >
                     <img
-                      src={game.header_img}
+                      src={game.header_image}
                       alt={game.name}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       onError={(e) => { e.currentTarget.src = '/fallback-cover.png'; }}
@@ -139,7 +167,7 @@ export default function Purchased() {
                   <div className="flex flex-col justify-between flex-grow min-w-0">
                     <div>
                       <div className="flex items-start justify-between gap-2 mb-1">
-                        <Link to={`/game/${game.id}`}>
+                        <Link to={`/game/${game._id}`}>
                           <h3 className="font-display text-lg font-semibold text-[#F0EDE6]
                                          hover:text-[#4ADE80] transition-colors line-clamp-1">
                             {game.name}
@@ -152,10 +180,10 @@ export default function Purchased() {
                       </div>
 
                       <div className="flex flex-wrap items-center gap-4 text-xs text-[#8B9DB5] mt-1">
-                        {game.developer && (
+                        {game.developers && game.developers.length > 0 && (
                           <span className="flex items-center gap-1">
                             <User className="w-3 h-3 text-[#4A6180]" />
-                            {game.developer}
+                            {game.developers[0]}
                           </span>
                         )}
                         {game.release_date && (
@@ -183,10 +211,10 @@ export default function Purchased() {
 
                     <div className="flex items-center justify-between mt-3 pt-3 border-t border-[#253549]">
                       <span className="font-display font-bold text-[#FFB830] text-sm">
-                        {game.price_raw === 0 ? 'Miễn phí' : game.price}
+                        {formatPrice(game.price)}
                       </span>
                       <Link
-                        to={`/game/${game.id}`}
+                        to={`/game/${game._id}`}
                         className="flex items-center gap-1.5 text-xs font-display text-[#8B9DB5]
                                    hover:text-[#FF6B4A] transition-colors"
                       >

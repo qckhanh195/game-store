@@ -155,6 +155,12 @@ export default function Home() {
                 {t}
               </button>
             ))}
+            <button
+              onClick={() => navigate('/danh-muc')}
+              className="px-3 py-1.5 text-xs font-display tracking-wide border border-[#253549] text-[#8B9DB5] hover:border-[#FF6B4A] hover:text-[#FF6B4A] transition-all"
+            >
+              ...
+            </button>
           </div>
         </div>
 
@@ -189,7 +195,7 @@ export default function Home() {
         ) : games.length > 0 ? (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 animate-fade-up animate-delay-3">
             {games.map((game) => (
-              <GameCard key={game.id} game={game} />
+              <GameCard key={game._id} game={game} />
             ))}
           </div>
         ) : (

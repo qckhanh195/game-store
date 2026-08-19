@@ -6,8 +6,8 @@ export default function GameCard({ game }) {
   const { addToCart, cartItems, purchasedGames } = useCart();
   const navigate = useNavigate();
 
-  const isInCart = cartItems.some((item) => item.id === game.id);
-  const isPurchased = purchasedGames.some((g) => g.id === game.id);
+  const isInCart = cartItems.some((item) => item._id === game._id);
+  const isPurchased = purchasedGames.some((g) => g._id === game._id);
 
   const handleTagClick = (e, tag) => {
     e.preventDefault();
@@ -15,9 +15,14 @@ export default function GameCard({ game }) {
     navigate(`/danh-muc?tag=${encodeURIComponent(tag)}`);
   };
 
+  const formatPrice = (price) => {
+    if (!price || price === 0) return 'Miễn phí';
+    return `$${price.toFixed(2)}`;
+  };
+
   return (
     <Link
-      to={`/game/${game.id}`}
+      to={`/game/${game._id}`}
       className="group relative block border border-[#253549] bg-[#162232]
                  transition-all duration-300
                  hover:-translate-y-1 hover:border-[#FF6B4A] hover:bg-[#1E2F42]
@@ -122,7 +127,7 @@ export default function GameCard({ game }) {
           {/* Bottom Action Area (Duplicated for interaction) */}
           <div className="flex items-center justify-between pt-3 border-t border-[#253549]">
             <span className="font-display text-base font-bold text-[#FFB830]">
-              {game.price_raw === 0 ? 'Miễn phí' : game.price}
+              {formatPrice(game.price)}
             </span>
 
             {isPurchased ? (
@@ -168,7 +173,7 @@ export default function GameCard({ game }) {
       {/* Cover image */}
       <div className="aspect-video overflow-hidden border-b border-[#253549] bg-[#1E2F42]">
         <img
-          src={game.header_img}
+          src={game.header_image}
           alt={game.name}
           className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
           onError={(e) => { e.currentTarget.src = '/fallback-cover.png'; }}
@@ -200,7 +205,7 @@ export default function GameCard({ game }) {
 
         <div className="flex items-center justify-between mt-auto pt-3 border-t border-[#253549]">
           <span className="font-display text-base font-bold text-[#FFB830]">
-            {game.price_raw === 0 ? 'Miễn phí' : game.price}
+            {formatPrice(game.price)}
           </span>
 
           {isPurchased ? (

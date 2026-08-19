@@ -8,7 +8,7 @@ const { protect } = require('../middleware/authMiddleware');
 
 // Hàm lấy dữ liệu đầy đủ của user (kèm game đã mua)
 const getFullUserResponse = async (user) => {
-  const purchasedGamesData = await Game.find({ id: { $in: user.purchasedGames || [] } });
+  const purchasedGamesData = await Game.find({ _id: { $in: user.purchasedGames || [] } });
   return {
     id: user._id,
     name: user.name,

@@ -1,7 +1,7 @@
 /**
  * Content-Based Recommendation Engine
  * Thuật toán: TF-IDF weighted vector + Cosine Similarity
- * Dữ liệu đặc trưng: tags (weight 5), developer (weight 3), categories (weight 1), publisher (weight 1)
+ * Dữ liệu đặc trưng: tags (weight 5), developers (weight 3), genres (weight 2), categories (weight 1), publishers (weight 1)
  */
 
 /**
@@ -21,17 +21,11 @@ function buildFeatureVector(game) {
     });
   };
 
-  const addTerm = (term, weight) => {
-    if (!term || typeof term !== 'string') return;
-    const key = term.toLowerCase().trim();
-    if (!key) return;
-    vector[key] = (vector[key] || 0) + weight;
-  };
-
-  addTerms(game.tags, 5);        // tags — trọng số cao nhất
-  addTerms(game.categories, 1);  // categories — trọng số trung bình
-  addTerm(game.developer, 3);    // developer
-  addTerm(game.publisher, 1);    // publisher
+  addTerms(game.tags, 5);         // tags — trọng số cao nhất
+  addTerms(game.developers, 3);   // developers — trọng số cao
+  addTerms(game.genres, 2);       // genres — trọng số trung bình
+  addTerms(game.categories, 1);   // categories — trọng số thấp
+  addTerms(game.publishers, 1);   // publishers — trọng số thấp
 
   return vector;
 }
@@ -80,7 +74,7 @@ export function getSimilarGames(targetGame, allGames, n = 8) {
   const targetVec = buildFeatureVector(targetGame);
 
   const scored = allGames
-    .filter((g) => g.id !== targetGame.id)
+    .filter((g) => g._id !== targetGame._id)
     .map((game) => ({
       game,
       score: cosineSimilarity(targetVec, buildFeatureVector(game)),
@@ -105,17 +99,19 @@ export function getPersonalizedRecommendations(purchasedGames, allGames, n = 40)
   if (!purchasedGames || purchasedGames.length === 0) return [];
   if (!allGames || allGames.length === 0) return [];
 
-  const purchasedIds = new Set(purchasedGames.map((g) => g.id));
+  const purchasedIds = new Set(purchasedGames.map((g) => g._id));
 
   // Build lookup sets for purchased attributes once to optimize search
   const purchasedDevelopers = new Set(
     purchasedGames
-      .map((g) => g.developer?.toLowerCase().trim())
+      .flatMap((g) => g.developers || [])
+      .map((d) => d.toLowerCase().trim())
       .filter(Boolean)
   );
   const purchasedPublishers = new Set(
     purchasedGames
-      .map((g) => g.publisher?.toLowerCase().trim())
+      .flatMap((g) => g.publishers || [])
+      .map((p) => p.toLowerCase().trim())
       .filter(Boolean)
   );
   const purchasedTags = new Set(
@@ -142,7 +138,7 @@ export function getPersonalizedRecommendations(purchasedGames, allGames, n = 40)
 
   // Tính raw cosine similarity cho tất cả game chưa mua
   const rawScored = allGames
-    .filter((g) => !purchasedIds.has(g.id))
+    .filter((g) => !purchasedIds.has(g._id))
     .map((game) => ({
       game,
       rawScore: cosineSimilarity(profileVec, buildFeatureVector(game)),
@@ -165,9 +161,18 @@ export function getPersonalizedRecommendations(purchasedGames, allGames, n = 40)
       const normalizedPct = Math.round(50 + ((rawScore - minScore) / range) * 45);
       const percentage = Math.min(98, Math.max(50, normalizedPct));
 
+      // Find matching developer (first match from game.developers)
+      const matchingDeveloper = (game.developers || []).find((d) =>
+        purchasedDevelopers.has(d.toLowerCase().trim())
+      );
+      // Find matching publisher (first match from game.publishers)
+      const matchingPublisher = (game.publishers || []).find((p) =>
+        purchasedPublishers.has(p.toLowerCase().trim())
+      );
+
       const matches = {
-        developer: game.developer && purchasedDevelopers.has(game.developer.toLowerCase().trim()) ? game.developer : null,
-        publisher: game.publisher && purchasedPublishers.has(game.publisher.toLowerCase().trim()) ? game.publisher : null,
+        developer: matchingDeveloper || null,
+        publisher: matchingPublisher || null,
         tags: (game.tags || []).filter((t) => purchasedTags.has(t.toLowerCase().trim())),
         categories: (game.categories || []).filter((c) => purchasedCategories.has(c.toLowerCase().trim())),
       };

@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../hooks/useCart';
 import { useAuth } from '../context/AuthContext';
 import { gameApi } from '../services/api';
+import BlurText from '../components/BlurText';
 import {
   Trash2, ShoppingBag, ArrowRight, CheckCircle2, AlertCircle,
   RefreshCw, Gamepad2, ShoppingCart,
@@ -16,12 +17,12 @@ export default function Cart() {
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
 
-  const formatPrice = (rawPrice) => {
-    if (!rawPrice || rawPrice === 0) return 'Miễn phí';
-    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(rawPrice / 100);
+  const formatPrice = (price) => {
+    if (!price || price === 0) return 'Miễn phí';
+    return `$${price.toFixed(2)}`;
   };
 
-  const totalRaw = cartItems.reduce((sum, item) => sum + (item.price_raw || 0), 0);
+  const totalPrice = cartItems.reduce((sum, item) => sum + (item.price || 0), 0);
 
   const handleCheckout = async () => {
     if (cartItems.length === 0) return;
@@ -35,7 +36,7 @@ export default function Cart() {
     setSuccessMsg('');
 
     try {
-      const itemsPayload = cartItems.map((item) => ({ id: item.id, quantity: 1 }));
+      const itemsPayload = cartItems.map((item) => ({ _id: item._id, quantity: 1 }));
       const data = await gameApi.checkout(itemsPayload);
 
       if (data.success) {
@@ -96,10 +97,10 @@ export default function Cart() {
     <div className="min-h-screen bg-[#0F1923] text-[#F0EDE6] font-body">
       <div className="max-w-6xl mx-auto px-6 py-8">
         {/* Header */}
-        <h1 className="font-display text-3xl font-bold text-[#F0EDE6] mb-2 flex items-center gap-3 animate-fade-up">
+        <div className="font-display text-3xl font-bold text-[#F0EDE6] mb-2 flex flex-wrap items-center gap-3 animate-fade-up">
           <span className="text-[#FF6B4A] text-base tracking-widest">//</span>
-          GIỎ HÀNG
-        </h1>
+          <BlurText text="GIỎ HÀNG" delay={150} animateBy="words" direction="top" className="text-[#F0EDE6]" />
+        </div>
         <p className="text-[#8B9DB5] text-sm mb-8 animate-fade-up animate-delay-1">
           {cartItems.length} sản phẩm đang chờ thanh toán
         </p>
@@ -145,16 +146,16 @@ export default function Cart() {
 
               {cartItems.map((item) => (
                 <div
-                  key={item.id}
+                  key={item._id}
                   className="border border-[#253549] bg-[#162232] p-4 flex gap-4
                              hover:border-[#8B9DB5]/30 transition-all"
                 >
                   <Link
-                    to={`/game/${item.id}`}
+                    to={`/game/${item._id}`}
                     className="w-28 md:w-36 aspect-video overflow-hidden shrink-0 border border-[#253549]"
                   >
                     <img
-                      src={item.header_img}
+                      src={item.header_image}
                       alt={item.name}
                       className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                     />
@@ -162,14 +163,14 @@ export default function Cart() {
 
                   <div className="flex flex-col justify-between flex-grow min-w-0">
                     <div>
-                      <Link to={`/game/${item.id}`}>
+                      <Link to={`/game/${item._id}`}>
                         <h3 className="font-display font-semibold text-base text-[#F0EDE6]
                                        hover:text-[#FF6B4A] transition-colors truncate">
                           {item.name}
                         </h3>
                       </Link>
                       <p className="text-xs text-[#4A6180] mt-1">
-                        {item.developer || 'N/A'}
+                        {item.developers?.[0] || 'N/A'}
                       </p>
                       <div className="flex flex-wrap gap-1 mt-2">
                         {item.tags?.slice(0, 2).map((t) => (
@@ -181,10 +182,10 @@ export default function Cart() {
                     </div>
                     <div className="flex justify-between items-center mt-3">
                       <span className="font-display font-bold text-[#FFB830] text-sm">
-                        {item.price_raw === 0 ? 'Miễn phí' : item.price}
+                        {formatPrice(item.price)}
                       </span>
                       <button
-                        onClick={() => removeFromCart(item.id)}
+                        onClick={() => removeFromCart(item._id)}
                         className="p-1.5 text-[#4A6180] hover:text-[#F87171] hover:bg-[#F87171]/5
                                    border border-transparent hover:border-[#F87171]/20 transition-all"
                         title="Xóa"
@@ -209,7 +210,7 @@ export default function Cart() {
                 <div className="space-y-3 mb-6 text-sm">
                   <div className="flex justify-between text-[#8B9DB5]">
                     <span>Giá tạm tính ({cartItems.length} sản phẩm)</span>
-                    <span className="text-[#F0EDE6] font-display font-semibold">{formatPrice(totalRaw)}</span>
+                    <span className="text-[#F0EDE6] font-display font-semibold">{formatPrice(totalPrice)}</span>
                   </div>
                   <div className="flex justify-between text-[#8B9DB5]">
                     <span>Thuế & Phí</span>
@@ -217,7 +218,7 @@ export default function Cart() {
                   </div>
                   <div className="pt-3 border-t border-[#253549] flex justify-between">
                     <span className="font-display font-semibold text-[#F0EDE6]">Tổng cộng</span>
-                    <span className="font-display text-lg font-bold text-[#FFB830]">{formatPrice(totalRaw)}</span>
+                    <span className="font-display text-lg font-bold text-[#FFB830]">{formatPrice(totalPrice)}</span>
                   </div>
                 </div>
 

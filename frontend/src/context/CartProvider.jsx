@@ -59,14 +59,14 @@ export const CartProvider = ({ children }) => {
 
   const addToCart = (game) => {
     setCartItems((prev) => {
-      const exist = prev.find((item) => item.id === game.id);
+      const exist = prev.find((item) => item._id === game._id);
       if (exist) return prev;
       return [...prev, { ...game, quantity: 1 }];
     });
   };
 
   const removeFromCart = (id) => {
-    setCartItems((prev) => prev.filter((item) => item.id !== id));
+    setCartItems((prev) => prev.filter((item) => item._id !== id));
   };
 
   const clearCart = () => setCartItems([]);
@@ -77,8 +77,8 @@ export const CartProvider = ({ children }) => {
       await syncUser();
     } else {
       setPurchasedGames((prev) => {
-        const existing = new Set(prev.map((g) => g.id));
-        const newItems = items.filter((g) => !existing.has(g.id));
+        const existing = new Set(prev.map((g) => g._id));
+        const newItems = items.filter((g) => !existing.has(g._id));
         const updated = [...prev, ...newItems];
         savePurchased(updated);
         return updated;
@@ -115,7 +115,7 @@ export const CartProvider = ({ children }) => {
   // Reset toàn bộ danh sách game đã mua và khôi phục kho hàng backend
   const resetPurchased = async () => {
     try {
-      const gameIds = purchasedGames.map((g) => g.id);
+      const gameIds = purchasedGames.map((g) => g._id);
       if (gameIds.length > 0) {
         await gameApi.resetPurchases(gameIds);
       }
@@ -133,7 +133,7 @@ export const CartProvider = ({ children }) => {
   };
 
   // Game dùng làm profile = đã mua nhưng chưa bị loại
-  const profileGames = purchasedGames.filter((g) => !profileExcluded.has(g.id));
+  const profileGames = purchasedGames.filter((g) => !profileExcluded.has(g._id));
 
   return (
     <CartContext.Provider
