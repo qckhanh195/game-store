@@ -1,36 +1,28 @@
-# GamesStore
-
-Dự án **GamesStore** là một ứng dụng web cửa hàng bán game hiện đại, bao gồm hai phần chính:
-* **Backend**: Xây dựng trên nền tảng Node.js, Express và kết nối cơ sở dữ liệu MongoDB.
-* **Frontend**: Xây dựng bằng React (Vite) kết hợp với Tailwind CSS.
-
----
-
-## 🛠️ Công Nghệ Sử Dụng
+## 🛠️ Technologies Used
 
 ### Frontend:
-* **React** (Phiên bản 19)
-* **Vite** (Bộ công cụ build siêu nhanh)
-* **Tailwind CSS** (Framework CSS tiện lợi)
-* **Axios** (Thư viện gửi HTTP Request & Quản lý Interceptors tự động đính kèm token)
-* **Lucide React** (Bộ icon hiện đại)
-* **React Router DOM** (Quản lý định tuyến và điều hướng)
-* **Context API** (Quản lý trạng thái Đăng nhập và Giỏ hàng toàn cục)
+* **React** (Version 19)
+* **Vite** (Super-fast build tool)
+* **Tailwind CSS** (Convenient CSS Framework)
+* **Axios** (Library for sending HTTP Requests & managing Interceptors to automatically attach tokens)
+* **Lucide React** (Modern icon set)
+* **React Router DOM** (Routing and navigation management)
+* **Context API** (Global state management for Login and Cart)
 
 ### Backend:
 * **Node.js** & **Express**
-* **MongoDB** & **Mongoose** (ODM kết nối MongoDB)
-* **BcryptJS** (Mã hóa một chiều mật khẩu người dùng)
-* **JsonWebToken** (Xác thực & phân quyền bảo mật)
-* **Cors** (Cấu hình bảo mật chia sẻ tài nguyên)
-* **Dotenv** (Quản lý biến môi trường)
+* **MongoDB** & **Mongoose** (ODM to connect to MongoDB)
+* **BcryptJS** (One-way hashing for user passwords)
+* **JsonWebToken** (Authentication & authorization security)
+* **Cors** (Security configuration for Cross-Origin Resource Sharing)
+* **Dotenv** (Environment variables management)
 
 ---
 
-## 🚀 Hướng Dẫn Cài Đặt & Chạy Dự Án
+## 🚀 Installation & Setup
 
-### Bước 1: Clone dự án về máy
-Mở Terminal của bạn và chạy lệnh sau:
+### Step 1: Clone the repository
+Open your Terminal and run the following command:
 ```bash
 git clone https://github.com/qckhanh195/game-store.git
 cd GamesStore
@@ -38,52 +30,47 @@ cd GamesStore
 
 ---
 
-### Bước 2: Cài đặt và cấu hình Backend
+### Step 2: Install and configure Backend
 
-1. Di chuyển vào thư mục `backend`:
+1. Navigate to the `backend` directory:
    ```bash
    cd backend
    ```
-2. Cài đặt các thư viện cần thiết:
+2. Install dependencies:
    ```bash
    npm install
    ```
-3. Tạo file cấu hình môi trường `.env` từ file ví dụ `.env.example`:
-   * Tạo một file mới tên là `.env` nằm trực tiếp trong thư mục `backend`.
-   * Copy toàn bộ nội dung từ file `.env.example` sang file `.env` vừa tạo.
-   * Đảm bảo cấu hình đúng đường dẫn kết nối MongoDB `MONGO_URI` và khóa bí mật `JWT_SECRET` trong file `.env`:
+3. Create the environment configuration file `.env` from the `.env.example` file:
+   * Create a new file named `.env` directly in the `backend` folder.
+   * Copy all content from the `.env.example` file to the newly created `.env` file.
+   * Make sure to configure the correct MongoDB connection string `MONGO_URI` and secret key `JWT_SECRET` in the `.env` file:
      ```env
      PORT=5000
      MONGO_URI=your_mongodb_connection_uri
      JWT_SECRET=your_secret_key_here
      JWT_EXPIRES_IN=7d
      ```
-4. Khởi chạy Backend Server:
+4. Start the Backend Server:
    ```bash
    npm run dev
-   # Hoặc chạy: npm start
+   # Or run: npm start
    ```
-   * *Mặc định Backend sẽ chạy tại địa chỉ:* `http://localhost:5000`
+   * *By default, the Backend will run at:* `http://localhost:5000`
 
 ---
 
-### Bước 3: Cài đặt và cấu hình Frontend
+### Step 3: Install and configure Frontend
 
-1. Mở một terminal mới và di chuyển vào thư mục `frontend`:
+1. Open a new terminal and navigate to the `frontend` directory:
    ```bash
    cd frontend
    ```
-2. Cài đặt các thư viện cần thiết:
+2. Install dependencies:
    ```bash
    npm install
    ```
-3. Khởi chạy Frontend:
+3. Start the Frontend:
    ```bash
    npm run dev
    ```
-   * *Mặc định Frontend chạy tại:* `http://localhost:5173` (hoặc cổng được hiển thị trong terminal). Bạn có thể mở trình duyệt và truy cập vào địa chỉ này để sử dụng ứng dụng.
-
----
-
-## 🧠 Tài liệu thuật toán gợi ý
-Xem hướng tiếp cận và chi tiết các bước thực hiện thuật toán tại: **[RECOMMENDATION_SYSTEM.md](docs/RECOMMENDATION_SYSTEM.md)**.
+   * *By default, the Frontend runs at:* `http://localhost:5173` (or the port shown in the terminal). You can open your browser and navigate to this address to use the application.
